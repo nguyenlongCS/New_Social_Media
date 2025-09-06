@@ -1,4 +1,4 @@
-<!-- src/components/RightSidebar.vue -->
+<!-- src/components/RightSide.vue -->
 <!-- Component sidebar bên phải hiển thị chi tiết bài viết -->
 
 <template>
@@ -50,7 +50,7 @@ import { ref, computed } from 'vue'
 import { useSocialData } from '../composables/useSocialData'
 
 export default {
-  name: 'RightSidebar',
+  name: 'RightSide',
   setup() {
     const commentText = ref('') // Text input comment
     

@@ -1,4 +1,4 @@
-<!-- src/components/LeftSidebar.vue -->
+<!-- src/components/LeftSide.vue.vue -->
 <!-- Component sidebar bên trái chứa menu và danh sách bạn bè -->
 
 <template>
@@ -45,7 +45,7 @@
 import { useSocialData } from '../composables/useSocialData'
 
 export default {
-  name: 'LeftSidebar',
+  name: 'LeftSide.vue',
   setup() {
     // Sử dụng composable để quản lý danh sách bạn bè
     const { friends } = useSocialData()

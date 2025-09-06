@@ -1,4 +1,4 @@
-<!-- src/components/AppHeader.vue -->
+<!-- src/components/Header.vue -->
 <!-- Component header chứa logo, navigation và thanh tìm kiếm -->
 
 <template>
@@ -51,7 +51,7 @@ import { useRouter } from 'vue-router'
 import { useAuth } from '../composables/useAuth'
 
 export default {
-  name: 'AppHeader',
+  name: 'Header',
   setup() {
     const router = useRouter()
     const { user, logout, isLoading } = useAuth()

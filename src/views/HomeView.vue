@@ -4,34 +4,34 @@
 <template>
   <div class="home-view">
     <!-- Header -->
-    <AppHeader />
+    <Header />
     
     <div class="flex w-full min-h-screen pt-16">
       <!-- Menu bên trái -->
-      <LeftSidebar />
+      <LeftSide.vue />
       
       <!-- Feed chính -->
       <PostFeed />
       
       <!-- Panel bên phải -->
-      <RightSidebar />
+      <RightSide />
     </div>
   </div>
 </template>
 
 <script>
-import AppHeader from '../components/AppHeader.vue'
-import LeftSidebar from '../components/LeftSidebar.vue'
+import Header from '../components/Header.vue'
+import LeftSide.vue from '../components/LeftSide.vue.vue'
 import PostFeed from '../components/PostFeed.vue'
-import RightSidebar from '../components/RightSidebar.vue'
+import RightSide from '../components/RightSide.vue'
 
 export default {
   name: 'HomeView',
   components: {
-    AppHeader,
-    LeftSidebar,
+    Header,
+    LeftSide.vue,
     PostFeed,
-    RightSidebar
+    RightSide
   }
 }
 </script>
