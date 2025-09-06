@@ -8,7 +8,7 @@
     
     <div class="flex w-full min-h-screen pt-16">
       <!-- Menu bên trái -->
-      <LeftSide.vue />
+      <LeftSide />
       
       <!-- Feed chính -->
       <PostFeed />
@@ -21,7 +21,7 @@
 
 <script>
 import Header from '../components/Header.vue'
-import LeftSide.vue from '../components/LeftSide.vue.vue'
+import LeftSide from '../components/LeftSide.vue'
 import PostFeed from '../components/PostFeed.vue'
 import RightSide from '../components/RightSide.vue'
 
@@ -29,7 +29,7 @@ export default {
   name: 'HomeView',
   components: {
     Header,
-    LeftSide.vue,
+    LeftSide,
     PostFeed,
     RightSide
   }
