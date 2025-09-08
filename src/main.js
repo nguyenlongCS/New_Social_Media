@@ -1,18 +1,16 @@
-
-// src/main.js
-// File khởi tạo ứng dụng Vue
-
+/*
+src/main.js - Main File với CSS import
+Entry point của ứng dụng Vue với proper initialization và CSS
+Logic: Khởi tạo Vue app, import CSS, mount router
+*/
 import { createApp } from 'vue'
 import App from './App.vue'
 import router from './router'
-import { useAuth } from './composables/useAuth'
 import './assets/main.css'
 
+// Tạo Vue app với router
 const app = createApp(App)
-
-// Khởi tạo auth state trước khi mount app
-const { initAuth } = useAuth()
-initAuth()
-
 app.use(router)
 app.mount('#app')
+
+// Không gọi useAuth ở global level để tránh lifecycle hook warnings

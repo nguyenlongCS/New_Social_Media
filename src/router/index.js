@@ -1,56 +1,72 @@
-// src/router/index.js
-// Cấu hình routing cho ứng dụng
-
+/*
+src/router/index.js
+Router với auth guards
+*/
 import { createRouter, createWebHistory } from 'vue-router'
 import HomeView from '../views/HomeView.vue'
 import LoginView from '../views/LoginView.vue'
-import { useAuth } from '../composables/useAuth'
 
 const router = createRouter({
-  history: createWebHistory(import.meta.env.BASE_URL),
+  history: createWebHistory('/'),
   routes: [
     {
       path: '/',
-      redirect: '/login' // Redirect từ / về /login
+      redirect: '/login'
     },
     {
       path: '/home',
       name: 'home',
       component: HomeView,
-      meta: { requiresAuth: true } // Yêu cầu đăng nhập
+      meta: { requiresAuth: true }
     },
     {
       path: '/login',
       name: 'login',
       component: LoginView,
-      meta: { requiresGuest: true } // Chỉ cho phép khi chưa đăng nhập
+      meta: { requiresGuest: true }
+    },
+    {
+      path: '/:pathMatch(.*)*',
+      redirect: '/login'
     }
   ]
 })
 
-// Navigation guards để kiểm tra authentication
-router.beforeEach((to, from, next) => {
-  const { user } = useAuth()
+router.beforeEach(async (to, from, next) => {
+  const { onAuthStateChanged } = await import('firebase/auth')
+  const { auth } = await import('@/firebase/config')
   
-  // Route yêu cầu đăng nhập
-  if (to.meta.requiresAuth && !user.value) {
-    next('/login')
-    return
+  const checkAuthState = () => {
+    return new Promise((resolve) => {
+      const unsubscribe = onAuthStateChanged(auth, (user) => {
+        unsubscribe()
+        resolve(user)
+      })
+    })
   }
   
-  // Route chỉ cho guest (chưa đăng nhập)
-  // Chỉ redirect nếu không phải từ register action
-  if (to.meta.requiresGuest && user.value) {
-    // Kiểm tra nếu đang từ register, không redirect ngay
-    if (from.path === '/login' && to.path === '/login') {
-      next()
+  try {
+    const user = await checkAuthState()
+    
+    if (to.meta.requiresAuth && !user) {
+      next('/login')
       return
     }
-    next('/home')
-    return
+    
+    if (to.meta.requiresGuest && user) {
+      next('/home')
+      return
+    }
+    
+    next()
+  } catch (error) {
+    console.error('Auth check error:', error)
+    if (to.path !== '/login') {
+      next('/login')
+    } else {
+      next()
+    }
   }
-  
-  next()
 })
 
 export default router

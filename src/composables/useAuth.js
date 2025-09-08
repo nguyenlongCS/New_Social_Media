@@ -1,194 +1,159 @@
-// src/composables/useAuth.js
-// Composable quản lý authentication với Firebase
-// Thêm chức năng đăng nhập bằng Facebook và Google
-
+/*
+src/composables/useAuth.js - Simplified Fixed Version
+Logic đăng nhập đơn giản từ Project 1 tích hợp với Project 2
+Logic: Firebase Auth với proper function definitions
+*/
 import { ref } from 'vue'
 import { 
   signInWithEmailAndPassword, 
   createUserWithEmailAndPassword,
-  signOut,
   sendPasswordResetEmail,
-  onAuthStateChanged,
-  signInWithPopup,
+  signInWithPopup, 
+  GoogleAuthProvider, 
   FacebookAuthProvider,
-  GoogleAuthProvider
+  signOut, 
+  onAuthStateChanged 
 } from 'firebase/auth'
-import { auth } from '../firebase/config'
-
-// State quản lý user và loading
-const user = ref(null)
-const isLoading = ref(false)
-const error = ref('')
+import { auth } from '@/firebase/config'
+import { useUsers } from './useUsers'
 
 export function useAuth() {
-  // Đăng nhập với email và password
-  const login = async (email, password) => {
+  const user = ref(null)
+  const isLoading = ref(false)
+  const error = ref('')
+  
+  let unsubscribe = null
+  const { syncUserToFirestore } = useUsers()
+
+  // Email/password login
+  const loginWithEmail = async (email, password) => {
+    if (!email || !password) throw new Error('MISSING_FIELDS')
+
+    isLoading.value = true
     try {
-      isLoading.value = true
-      error.value = ''
-      
       const userCredential = await signInWithEmailAndPassword(auth, email, password)
-      user.value = userCredential.user
-      
-      return { success: true, user: userCredential.user }
-    } catch (err) {
-      error.value = getErrorMessage(err.code)
-      return { success: false, error: error.value }
+      await syncUserToFirestore(userCredential.user)
+      return userCredential.user
     } finally {
       isLoading.value = false
     }
   }
-  
-  // Đăng nhập với Facebook
-  const loginWithFacebook = async () => {
+
+  // Email/password signup
+  const signupWithEmail = async (email, password, confirmPassword) => {
+    if (!email || !password || !confirmPassword) throw new Error('MISSING_FIELDS')
+    if (password !== confirmPassword) throw new Error('PASSWORD_MISMATCH')
+    if (password.length < 6) throw new Error('WEAK_PASSWORD')
+
+    isLoading.value = true
     try {
-      isLoading.value = true
-      error.value = ''
-      
-      const provider = new FacebookAuthProvider()
-      // Yêu cầu quyền truy cập email và thông tin công khai
-      provider.addScope('email')
-      provider.addScope('public_profile')
-      
-      const result = await signInWithPopup(auth, provider)
-      user.value = result.user
-      
-      return { success: true, user: result.user }
-    } catch (err) {
-      error.value = getErrorMessage(err.code)
-      return { success: false, error: error.value }
-    } finally {
-      isLoading.value = false
-    }
-  }
-  
-  // Đăng nhập với Google
-  const loginWithGoogle = async () => {
-    try {
-      isLoading.value = true
-      error.value = ''
-      
-      const provider = new GoogleAuthProvider()
-      // Yêu cầu quyền truy cập email và profile
-      provider.addScope('email')
-      provider.addScope('profile')
-      
-      const result = await signInWithPopup(auth, provider)
-      user.value = result.user
-      
-      return { success: true, user: result.user }
-    } catch (err) {
-      error.value = getErrorMessage(err.code)
-      return { success: false, error: error.value }
-    } finally {
-      isLoading.value = false
-    }
-  }
-  
-  // Đăng ký tài khoản mới
-  const register = async (email, password) => {
-    try {
-      isLoading.value = true
-      error.value = ''
-      
       const userCredential = await createUserWithEmailAndPassword(auth, email, password)
-      user.value = userCredential.user
-      
-      return { success: true, user: userCredential.user }
-    } catch (err) {
-      error.value = getErrorMessage(err.code)
-      return { success: false, error: error.value }
+      await syncUserToFirestore(userCredential.user)
+      return userCredential.user
     } finally {
       isLoading.value = false
     }
   }
-  
-  // Đăng xuất
+
+  // Social login helper
+  const handleSocialLogin = async (provider) => {
+    isLoading.value = true
+    try {
+      const result = await signInWithPopup(auth, provider)
+      await syncUserToFirestore(result.user)
+      return result.user
+    } finally {
+      isLoading.value = false
+    }
+  }
+
+  // Google login
+  const loginWithGoogle = async () => {
+    const provider = new GoogleAuthProvider()
+    provider.addScope('email')
+    provider.addScope('profile')
+    return handleSocialLogin(provider)
+  }
+
+  // Facebook login
+  const loginWithFacebook = async () => {
+    const provider = new FacebookAuthProvider()
+    provider.addScope('email')
+    provider.addScope('public_profile')
+    provider.setCustomParameters({ 'display': 'popup' })
+    return handleSocialLogin(provider)
+  }
+
+  // Password reset
+  const resetPassword = async (email) => {
+    if (!email) throw new Error('MISSING_EMAIL')
+    
+    isLoading.value = true
+    try {
+      await sendPasswordResetEmail(auth, email)
+    } finally {
+      isLoading.value = false
+    }
+  }
+
+  // Logout
   const logout = async () => {
+    isLoading.value = true
     try {
       await signOut(auth)
-      user.value = null
-      return { success: true }
-    } catch (err) {
-      error.value = getErrorMessage(err.code)
-      return { success: false, error: error.value }
-    }
-  }
-  
-  // Gửi email reset password
-  const resetPassword = async (email) => {
-    try {
-      isLoading.value = true
-      error.value = ''
-      
-      await sendPasswordResetEmail(auth, email)
-      return { success: true }
-    } catch (err) {
-      error.value = getErrorMessage(err.code)
-      return { success: false, error: error.value }
     } finally {
       isLoading.value = false
     }
   }
-  
-  // Theo dõi trạng thái authentication
+
+  // Initialize auth state listener
   const initAuth = (callback) => {
-    onAuthStateChanged(auth, (firebaseUser) => {
-      user.value = firebaseUser
+    unsubscribe = onAuthStateChanged(auth, (authUser) => {
+      user.value = authUser
+      if (authUser) {
+        syncUserToFirestore(authUser)
+      }
       
-      // Gọi callback nếu có
       if (callback && typeof callback === 'function') {
-        callback(firebaseUser)
+        callback(authUser)
       }
     })
   }
-  
-  // Chuyển đổi error code thành message tiếng Việt
-  const getErrorMessage = (errorCode) => {
-    switch (errorCode) {
-      case 'auth/user-not-found':
-        return 'Không tìm thấy tài khoản với email này'
-      case 'auth/wrong-password':
-        return 'Mật khẩu không chính xác'
-      case 'auth/email-already-in-use':
-        return 'Email đã được sử dụng cho tài khoản khác'
-      case 'auth/weak-password':
-        return 'Mật khẩu quá yếu (tối thiểu 6 ký tự)'
-      case 'auth/invalid-email':
-        return 'Địa chỉ email không hợp lệ'
-      case 'auth/too-many-requests':
-        return 'Quá nhiều lần thử. Vui lòng thử lại sau'
-      case 'auth/popup-closed-by-user':
-        return 'Cửa sổ đăng nhập đã bị đóng'
-      case 'auth/popup-blocked':
-        return 'Trình duyệt đã chặn cửa sổ popup'
-      case 'auth/cancelled-popup-request':
-        return 'Yêu cầu đăng nhập đã bị hủy'
-      case 'auth/account-exists-with-different-credential':
-        return 'Tài khoản đã tồn tại với phương thức đăng nhập khác'
-      case 'auth/network-request-failed':
-        return 'Lỗi kết nối mạng. Vui lòng thử lại'
-      default:
-        return 'Đã xảy ra lỗi. Vui lòng thử lại'
+
+  // Cleanup auth listener
+  const cleanup = () => {
+    if (unsubscribe) {
+      unsubscribe()
+      unsubscribe = null
     }
   }
-  
-  // Clear error
+
+  // Project 2 compatibility aliases
+  const login = loginWithEmail
+  const register = signupWithEmail
   const clearError = () => {
     error.value = ''
   }
-  
+
   return {
+    // State
     user,
     isLoading,
     error,
-    login,
-    loginWithFacebook,
+    
+    // Main methods
+    loginWithEmail,
+    signupWithEmail,
     loginWithGoogle,
-    register,
-    logout,
+    loginWithFacebook,
     resetPassword,
+    logout,
     initAuth,
+    cleanup,
+    
+    // Compatibility aliases
+    login,
+    register,
     clearError
   }
 }

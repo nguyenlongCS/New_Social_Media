@@ -1,17 +1,18 @@
-<!-- src/views/LoginView.vue -->
-<!-- Trang đăng nhập và đăng ký với Firebase Auth -->
-<!-- Thêm chức năng đăng nhập bằng Facebook và Google -->
-
+<!--
+src/views/LoginView.vue - Fixed Template + Logic
+Sửa template syntax error và đơn giản hóa logic
+Logic: Form đăng nhập/đăng ký với error handling
+-->
 <template>
   <div class="login-container">
     <div class="login-card">
-      <!-- Header với logo -->
+      <!-- Header với logo - UI từ Project 2 -->
       <div class="login-header">
         <h1 class="logo">Social Media</h1>
         <p class="subtitle">Kết nối với bạn bè và thế giới xung quanh</p>
       </div>
       
-      <!-- Tab buttons -->
+      <!-- Tab buttons - UI từ Project 2 -->
       <div class="tab-buttons">
         <button 
           :class="{ active: activeTab === 'login' }"
@@ -27,7 +28,7 @@
         </button>
       </div>
       
-      <!-- Form đăng nhập -->
+      <!-- Form đăng nhập - UI từ Project 2 với logic từ Project 1 -->
       <form v-if="activeTab === 'login'" @submit.prevent="handleLogin" class="auth-form">
         <div class="form-group">
           <label for="login-email">Email</label>
@@ -63,9 +64,9 @@
           </button>
         </div>
         
-        <!-- Hiển thị lỗi -->
-        <div v-if="error" class="error-message">
-          {{ error }}
+        <!-- Hiển thị lỗi - Logic từ Project 1 -->
+        <div v-if="errorMessage" class="error-message">
+          {{ errorMessage }}
         </div>
         
         <button type="submit" class="submit-btn" :disabled="isLoading">
@@ -73,12 +74,12 @@
           <span v-else>Đăng nhập</span>
         </button>
         
-        <!-- Divider -->
+        <!-- Divider - UI từ Project 2 -->
         <div class="divider">
           <span>hoặc</span>
         </div>
         
-        <!-- Social login buttons -->
+        <!-- Social login buttons - UI từ Project 2 với logic từ Project 1 -->
         <div class="social-buttons">
           <button 
             type="button" 
@@ -102,7 +103,7 @@
         </div>
       </form>
       
-      <!-- Form đăng ký -->
+      <!-- Form đăng ký - FIXED: Removed v-else" syntax error -->
       <form v-if="activeTab === 'register'" @submit.prevent="handleRegister" class="auth-form">
         <div class="form-group">
           <label for="register-email">Email</label>
@@ -137,12 +138,12 @@
           >
         </div>
         
-        <!-- Hiển thị lỗi -->
-        <div v-if="error" class="error-message">
-          {{ error }}
+        <!-- Hiển thị lỗi - Logic từ Project 1 -->
+        <div v-if="errorMessage" class="error-message">
+          {{ errorMessage }}
         </div>
         
-        <!-- Hiển thị lỗi confirm password -->
+        <!-- Hiển thị lỗi confirm password - Logic từ Project 1 -->
         <div v-if="passwordError" class="error-message">
           {{ passwordError }}
         </div>
@@ -152,12 +153,12 @@
           <span v-else>Đăng ký</span>
         </button>
         
-        <!-- Divider -->
+        <!-- Divider - UI từ Project 2 -->
         <div class="divider">
           <span>hoặc</span>
         </div>
         
-        <!-- Social login buttons cho register -->
+        <!-- Social login buttons cho register - UI từ Project 2 với logic từ Project 1 -->
         <div class="social-buttons">
           <button 
             type="button" 
@@ -181,7 +182,7 @@
         </div>
       </form>
       
-      <!-- Success message cho forgot password -->
+      <!-- Success message cho forgot password - Logic từ Project 1 -->
       <div v-if="resetEmailSent" class="success-message">
         Email đặt lại mật khẩu đã được gửi. Vui lòng kiểm tra hộp thư của bạn.
       </div>
@@ -193,41 +194,46 @@
 import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuth } from '../composables/useAuth'
+import { useErrorHandler } from '../composables/useErrorHandler'
 
 export default {
   name: 'LoginView',
   setup() {
     const router = useRouter()
+    
+    // Logic từ Project 1 - Authentication composable
     const { 
-      login, 
-      register, 
-      resetPassword, 
-      loginWithFacebook, 
+      loginWithEmail,
+      signupWithEmail,
+      loginWithFacebook,
       loginWithGoogle,
-      isLoading, 
-      error, 
-      clearError 
+      resetPassword,
+      isLoading
     } = useAuth()
     
-    // State cho tabs và forms
+    // Logic từ Project 1 - Error handling
+    const { handleError, showSuccess } = useErrorHandler()
+    
+    // State cho tabs và forms - UI từ Project 2
     const activeTab = ref('login')
     const resetEmailSent = ref(false)
+    const errorMessage = ref('')
     
-    // Form data cho đăng nhập
+    // Form data cho đăng nhập - Mapping từ Project 2
     const loginForm = ref({
       email: '',
       password: '',
       rememberMe: false
     })
     
-    // Form data cho đăng ký
+    // Form data cho đăng ký - Mapping từ Project 2  
     const registerForm = ref({
       email: '',
       password: '',
       confirmPassword: ''
     })
     
-    // Validation cho confirm password
+    // Validation cho confirm password - Logic từ Project 1
     const passwordError = computed(() => {
       if (registerForm.value.confirmPassword && 
           registerForm.value.password !== registerForm.value.confirmPassword) {
@@ -235,116 +241,143 @@ export default {
       }
       return ''
     })
+
+    // Xử lý đăng nhập - SIMPLIFIED
+    const handleLogin = async () => {
+      errorMessage.value = ''
+      
+      try {
+        console.log('Attempting login with:', loginForm.value.email)
+        const user = await loginWithEmail(
+          loginForm.value.email, 
+          loginForm.value.password
+        )
+        
+        if (user) {
+          console.log('Login successful:', user.email)
+          showSuccess('login')
+          router.push('/home')
+        }
+      } catch (error) {
+        console.error('Login error:', error)
+        errorMessage.value = handleError(error, 'login')
+      }
+    }
+    
+    // Xử lý đăng nhập bằng Facebook
+    const handleFacebookLogin = async () => {
+      errorMessage.value = ''
+      
+      try {
+        const user = await loginWithFacebook()
+        
+        if (user) {
+          showSuccess('login')
+          router.push('/home')
+        }
+      } catch (error) {
+        errorMessage.value = handleError(error, 'facebook')
+      }
+    }
+    
+    // Xử lý đăng nhập bằng Google
+    const handleGoogleLogin = async () => {
+      errorMessage.value = ''
+      
+      try {
+        const user = await loginWithGoogle()
+        
+        if (user) {
+          showSuccess('login')
+          router.push('/home')
+        }
+      } catch (error) {
+        errorMessage.value = handleError(error, 'google')
+      }
+    }
+    
+    // Xử lý đăng ký
+    const handleRegister = async () => {
+      errorMessage.value = ''
+      
+      // Kiểm tra mật khẩu xác nhận
+      if (registerForm.value.password !== registerForm.value.confirmPassword) {
+        return
+      }
+      
+      try {
+        const user = await signupWithEmail(
+          registerForm.value.email,
+          registerForm.value.password,
+          registerForm.value.confirmPassword
+        )
+        
+        if (user) {
+          // Reset form đăng ký
+          registerForm.value.email = ''
+          registerForm.value.password = ''
+          registerForm.value.confirmPassword = ''
+          
+          // Chuyển về tab đăng nhập
+          activeTab.value = 'login'
+          resetEmailSent.value = false
+          
+          // Hiển thị thông báo thành công
+          showSuccess('signup')
+        }
+      } catch (error) {
+        errorMessage.value = handleError(error, 'signup')
+      }
+    }
+    
+    // Xử lý quên mật khẩu
+    const handleForgotPassword = async () => {
+      if (!loginForm.value.email) {
+        errorMessage.value = 'Vui lòng nhập email để đặt lại mật khẩu'
+        return
+      }
+      
+      try {
+        await resetPassword(loginForm.value.email)
+        resetEmailSent.value = true
+        errorMessage.value = ''
+        showSuccess('reset')
+      } catch (error) {
+        errorMessage.value = handleError(error, 'reset')
+      }
+    }
+
+    // Chuyển đổi tab
+    const switchTab = (tab) => {
+      activeTab.value = tab
+      errorMessage.value = ''
+      resetEmailSent.value = false
+    }
     
     return {
+      // State
       activeTab,
       resetEmailSent,
+      errorMessage,
       loginForm,
       registerForm,
       passwordError,
       isLoading,
-      error,
-      login,
-      register,
-      resetPassword,
-      loginWithFacebook,
-      loginWithGoogle,
-      clearError,
-      router
-    }
-  },
-  methods: {
-    // Chuyển đổi tab
-    switchTab(tab) {
-      this.activeTab = tab
-      this.clearError()
-      this.resetEmailSent = false
-    },
-    
-    // Xử lý đăng nhập
-    async handleLogin() {
-      this.clearError()
       
-      const result = await this.login(this.loginForm.email, this.loginForm.password)
-      
-      if (result.success) {
-        // Chuyển về trang chủ sau khi đăng nhập thành công
-        this.router.push('/home')
-      }
-    },
-    
-    // Xử lý đăng nhập bằng Facebook
-    async handleFacebookLogin() {
-      this.clearError()
-      
-      const result = await this.loginWithFacebook()
-      
-      if (result.success) {
-        // Chuyển về trang chủ sau khi đăng nhập thành công
-        this.router.push('/home')
-      }
-    },
-    
-    // Xử lý đăng nhập bằng Google
-    async handleGoogleLogin() {
-      this.clearError()
-      
-      const result = await this.loginWithGoogle()
-      
-      if (result.success) {
-        // Chuyển về trang chủ sau khi đăng nhập thành công
-        this.router.push('/home')
-      }
-    },
-    
-    // Xử lý đăng ký
-    async handleRegister() {
-      this.clearError()
-      
-      // Kiểm tra mật khẩu xác nhận
-      if (this.registerForm.password !== this.registerForm.confirmPassword) {
-        return
-      }
-      
-      const result = await this.register(this.registerForm.email, this.registerForm.password)
-      
-      if (result.success) {
-        // Reset form đăng ký
-        this.registerForm.email = ''
-        this.registerForm.password = ''
-        this.registerForm.confirmPassword = ''
-        
-        // Chuyển về tab đăng nhập
-        this.activeTab = 'login'
-        this.resetEmailSent = false
-        
-        // Đợi một chút để Firebase Auth state cập nhật
-        setTimeout(() => {
-          // Hiển thị thông báo thành công
-          alert('Đăng ký tài khoản thành công! Vui lòng đăng nhập để tiếp tục.')
-        }, 100)
-      }
-    },
-    
-    // Xử lý quên mật khẩu
-    async handleForgotPassword() {
-      if (!this.loginForm.email) {
-        alert('Vui lòng nhập email để đặt lại mật khẩu')
-        return
-      }
-      
-      const result = await this.resetPassword(this.loginForm.email)
-      
-      if (result.success) {
-        this.resetEmailSent = true
-        this.clearError()
-      }
+      // Methods
+      handleLogin,
+      handleFacebookLogin,
+      handleGoogleLogin,
+      handleRegister,
+      handleForgotPassword,
+      switchTab
     }
   }
 }
 </script>
 
 <style scoped>
+/* UI Styles từ Project 2 - Giữ nguyên toàn bộ */
 .login-container {
   min-height: 100vh;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -516,7 +549,6 @@ export default {
   margin-top: 1rem;
 }
 
-/* Styles cho divider và social buttons */
 .divider {
   position: relative;
   text-align: center;
