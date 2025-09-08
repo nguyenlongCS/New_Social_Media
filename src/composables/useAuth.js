@@ -1,5 +1,6 @@
 // src/composables/useAuth.js
 // Composable quản lý authentication với Firebase
+// Thêm chức năng đăng nhập bằng Facebook và Google
 
 import { ref } from 'vue'
 import { 
@@ -7,7 +8,10 @@ import {
   createUserWithEmailAndPassword,
   signOut,
   sendPasswordResetEmail,
-  onAuthStateChanged
+  onAuthStateChanged,
+  signInWithPopup,
+  FacebookAuthProvider,
+  GoogleAuthProvider
 } from 'firebase/auth'
 import { auth } from '../firebase/config'
 
@@ -27,6 +31,52 @@ export function useAuth() {
       user.value = userCredential.user
       
       return { success: true, user: userCredential.user }
+    } catch (err) {
+      error.value = getErrorMessage(err.code)
+      return { success: false, error: error.value }
+    } finally {
+      isLoading.value = false
+    }
+  }
+  
+  // Đăng nhập với Facebook
+  const loginWithFacebook = async () => {
+    try {
+      isLoading.value = true
+      error.value = ''
+      
+      const provider = new FacebookAuthProvider()
+      // Yêu cầu quyền truy cập email và thông tin công khai
+      provider.addScope('email')
+      provider.addScope('public_profile')
+      
+      const result = await signInWithPopup(auth, provider)
+      user.value = result.user
+      
+      return { success: true, user: result.user }
+    } catch (err) {
+      error.value = getErrorMessage(err.code)
+      return { success: false, error: error.value }
+    } finally {
+      isLoading.value = false
+    }
+  }
+  
+  // Đăng nhập với Google
+  const loginWithGoogle = async () => {
+    try {
+      isLoading.value = true
+      error.value = ''
+      
+      const provider = new GoogleAuthProvider()
+      // Yêu cầu quyền truy cập email và profile
+      provider.addScope('email')
+      provider.addScope('profile')
+      
+      const result = await signInWithPopup(auth, provider)
+      user.value = result.user
+      
+      return { success: true, user: result.user }
     } catch (err) {
       error.value = getErrorMessage(err.code)
       return { success: false, error: error.value }
@@ -108,6 +158,16 @@ export function useAuth() {
         return 'Địa chỉ email không hợp lệ'
       case 'auth/too-many-requests':
         return 'Quá nhiều lần thử. Vui lòng thử lại sau'
+      case 'auth/popup-closed-by-user':
+        return 'Cửa sổ đăng nhập đã bị đóng'
+      case 'auth/popup-blocked':
+        return 'Trình duyệt đã chặn cửa sổ popup'
+      case 'auth/cancelled-popup-request':
+        return 'Yêu cầu đăng nhập đã bị hủy'
+      case 'auth/account-exists-with-different-credential':
+        return 'Tài khoản đã tồn tại với phương thức đăng nhập khác'
+      case 'auth/network-request-failed':
+        return 'Lỗi kết nối mạng. Vui lòng thử lại'
       default:
         return 'Đã xảy ra lỗi. Vui lòng thử lại'
     }
@@ -123,6 +183,8 @@ export function useAuth() {
     isLoading,
     error,
     login,
+    loginWithFacebook,
+    loginWithGoogle,
     register,
     logout,
     resetPassword,

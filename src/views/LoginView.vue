@@ -1,5 +1,6 @@
 <!-- src/views/LoginView.vue -->
 <!-- Trang đăng nhập và đăng ký với Firebase Auth -->
+<!-- Thêm chức năng đăng nhập bằng Facebook và Google -->
 
 <template>
   <div class="login-container">
@@ -71,6 +72,34 @@
           <span v-if="isLoading">Đang đăng nhập...</span>
           <span v-else>Đăng nhập</span>
         </button>
+        
+        <!-- Divider -->
+        <div class="divider">
+          <span>hoặc</span>
+        </div>
+        
+        <!-- Social login buttons -->
+        <div class="social-buttons">
+          <button 
+            type="button" 
+            class="social-btn facebook-btn" 
+            @click="handleFacebookLogin"
+            :disabled="isLoading"
+          >
+            <img src="/src/assets/icons/facebook.png" alt="Facebook" width="20" height="20">
+            <span>Đăng nhập với Facebook</span>
+          </button>
+          
+          <button 
+            type="button" 
+            class="social-btn google-btn" 
+            @click="handleGoogleLogin"
+            :disabled="isLoading"
+          >
+            <img src="/src/assets/icons/google.png" alt="Google" width="20" height="20">
+            <span>Đăng nhập với Google</span>
+          </button>
+        </div>
       </form>
       
       <!-- Form đăng ký -->
@@ -122,6 +151,34 @@
           <span v-if="isLoading">Đang tạo tài khoản...</span>
           <span v-else>Đăng ký</span>
         </button>
+        
+        <!-- Divider -->
+        <div class="divider">
+          <span>hoặc</span>
+        </div>
+        
+        <!-- Social login buttons cho register -->
+        <div class="social-buttons">
+          <button 
+            type="button" 
+            class="social-btn facebook-btn" 
+            @click="handleFacebookLogin"
+            :disabled="isLoading"
+          >
+            <img src="/src/assets/icons/facebook.png" alt="Facebook" width="20" height="20">
+            <span>Đăng ký với Facebook</span>
+          </button>
+          
+          <button 
+            type="button" 
+            class="social-btn google-btn" 
+            @click="handleGoogleLogin"
+            :disabled="isLoading"
+          >
+            <img src="/src/assets/icons/google.png" alt="Google" width="20" height="20">
+            <span>Đăng ký với Google</span>
+          </button>
+        </div>
       </form>
       
       <!-- Success message cho forgot password -->
@@ -141,7 +198,16 @@ export default {
   name: 'LoginView',
   setup() {
     const router = useRouter()
-    const { login, register, resetPassword, isLoading, error, clearError } = useAuth()
+    const { 
+      login, 
+      register, 
+      resetPassword, 
+      loginWithFacebook, 
+      loginWithGoogle,
+      isLoading, 
+      error, 
+      clearError 
+    } = useAuth()
     
     // State cho tabs và forms
     const activeTab = ref('login')
@@ -181,6 +247,8 @@ export default {
       login,
       register,
       resetPassword,
+      loginWithFacebook,
+      loginWithGoogle,
       clearError,
       router
     }
@@ -198,6 +266,30 @@ export default {
       this.clearError()
       
       const result = await this.login(this.loginForm.email, this.loginForm.password)
+      
+      if (result.success) {
+        // Chuyển về trang chủ sau khi đăng nhập thành công
+        this.router.push('/home')
+      }
+    },
+    
+    // Xử lý đăng nhập bằng Facebook
+    async handleFacebookLogin() {
+      this.clearError()
+      
+      const result = await this.loginWithFacebook()
+      
+      if (result.success) {
+        // Chuyển về trang chủ sau khi đăng nhập thành công
+        this.router.push('/home')
+      }
+    },
+    
+    // Xử lý đăng nhập bằng Google
+    async handleGoogleLogin() {
+      this.clearError()
+      
+      const result = await this.loginWithGoogle()
       
       if (result.success) {
         // Chuyển về trang chủ sau khi đăng nhập thành công
@@ -422,5 +514,78 @@ export default {
   font-size: 0.875rem;
   border: 0.0625rem solid #bbf7d0;
   margin-top: 1rem;
+}
+
+/* Styles cho divider và social buttons */
+.divider {
+  position: relative;
+  text-align: center;
+  margin: 1rem 0;
+}
+
+.divider::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  height: 0.0625rem;
+  background: #e5e7eb;
+}
+
+.divider span {
+  background: white;
+  padding: 0 1rem;
+  color: #6b7280;
+  font-size: 0.875rem;
+}
+
+.social-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.social-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  border: 0.0625rem solid #d1d5db;
+  border-radius: 0.5rem;
+  background: white;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.social-btn:hover {
+  background: #f9fafb;
+  border-color: #9ca3af;
+}
+
+.social-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.facebook-btn {
+  color: #1877f2;
+}
+
+.facebook-btn:hover {
+  background: #f0f6ff;
+  border-color: #1877f2;
+}
+
+.google-btn {
+  color: #4285f4;
+}
+
+.google-btn:hover {
+  background: #f0f6ff;
+  border-color: #4285f4;
 }
 </style>
