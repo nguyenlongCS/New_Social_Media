@@ -1,6 +1,6 @@
 /*
 src/composables/useAuth.js - Fixed Version
-Quản lý authentication với Firebase Auth - đã sửa lỗi handleSocialLogin
+Quản lý authentication với Firebase Auth - tích hợp với useUsers
 */
 import { ref } from 'vue'
 import { 
@@ -14,11 +14,14 @@ import {
   onAuthStateChanged 
 } from 'firebase/auth'
 import { auth } from '@/firebase/config'
+import { useUsers } from './useUsers'
 
 export function useAuth() {
   const user = ref(null)
   const isLoading = ref(false)
   let unsubscribe = null
+  
+  const { syncUserToFirestore } = useUsers()
 
   // Đăng nhập bằng email/password
   const loginWithEmail = async (email, password) => {
@@ -27,6 +30,10 @@ export function useAuth() {
     isLoading.value = true
     try {
       const userCredential = await signInWithEmailAndPassword(auth, email, password)
+      
+      // Đồng bộ user data với Firestore (cập nhật SignedIn)
+      await syncUserToFirestore(userCredential.user)
+      
       return userCredential.user
     } catch (error) {
       if (error.code === 'auth/user-not-found') {
@@ -54,6 +61,10 @@ export function useAuth() {
     isLoading.value = true
     try {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password)
+      
+      // Đồng bộ user data với Firestore (tạo mới)
+      await syncUserToFirestore(userCredential.user)
+      
       return userCredential.user
     } catch (error) {
       if (error.code === 'auth/email-already-in-use') {
@@ -79,6 +90,10 @@ export function useAuth() {
       provider.addScope('profile')
       
       const result = await signInWithPopup(auth, provider)
+      
+      // Đồng bộ user data với Firestore
+      await syncUserToFirestore(result.user)
+      
       return result.user
     } catch (error) {
       if (error.code === 'auth/popup-closed-by-user') {
@@ -105,6 +120,10 @@ export function useAuth() {
       provider.setCustomParameters({ 'display': 'popup' })
       
       const result = await signInWithPopup(auth, provider)
+      
+      // Đồng bộ user data với Firestore
+      await syncUserToFirestore(result.user)
+      
       return result.user
     } catch (error) {
       if (error.code === 'auth/popup-closed-by-user') {
@@ -155,8 +174,18 @@ export function useAuth() {
 
   // Khởi tạo auth state listener
   const initAuth = (callback) => {
-    unsubscribe = onAuthStateChanged(auth, (authUser) => {
+    unsubscribe = onAuthStateChanged(auth, async (authUser) => {
       user.value = authUser
+      
+      // Đồng bộ user data khi auth state thay đổi
+      if (authUser) {
+        try {
+          await syncUserToFirestore(authUser)
+        } catch (error) {
+          console.warn('Failed to sync user on auth state change:', error)
+        }
+      }
+      
       if (callback && typeof callback === 'function') {
         callback(authUser)
       }

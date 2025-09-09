@@ -1,11 +1,11 @@
 /*
 src/firebase/config.js - Refactored
-Cấu hình Firebase với các services cần thiết
+Cấu hình Firebase với database: social-media-web-database
 */
 
 import { initializeApp } from 'firebase/app'
 import { getAuth } from 'firebase/auth'
-import { getFirestore } from 'firebase/firestore'
+import { getFirestore, connectFirestoreEmulator } from 'firebase/firestore'
 import { getStorage } from 'firebase/storage'
 import { getDatabase } from 'firebase/database'
 
@@ -26,7 +26,10 @@ const app = initializeApp(firebaseConfig)
 
 // Khởi tạo các services
 export const auth = getAuth(app)
-export const db = getFirestore(app)
+
+// Khởi tạo Firestore với database cụ thể: social-media-web-database
+export const db = getFirestore(app, 'social-media-web-database')
+
 export const storage = getStorage(app)
 export const rtdb = getDatabase(app)
 
