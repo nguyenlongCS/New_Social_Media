@@ -1,6 +1,6 @@
 <!--
-src/views/HomeView.vue
-Main social media interface
+src/views/HomeView.vue - Refactored
+Trang chính của social media interface
 -->
 <template>
   <div class="home-view">
@@ -23,7 +23,6 @@ Main social media interface
 
 <script>
 import { ref, onMounted } from 'vue'
-import { useAuth } from '../composables/useAuth'
 import Header from '../components/Header.vue'
 import LeftSide from '../components/LeftSide.vue'
 import PostFeed from '../components/PostFeed.vue'
@@ -38,7 +37,6 @@ export default {
     RightSide
   },
   setup() {
-    const { user } = useAuth()
     const isAuthLoading = ref(true)
     
     onMounted(() => {
@@ -48,7 +46,6 @@ export default {
     })
     
     return {
-      user,
       isAuthLoading
     }
   }

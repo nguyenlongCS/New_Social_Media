@@ -1,6 +1,7 @@
-<!-- src/components/PostFeed.vue -->
-<!-- Component hiển thị danh sách bài viết trong feed chính -->
-
+<!--
+src/components/PostFeed.vue - Refactored
+Component hiển thị danh sách bài viết trong feed chính
+-->
 <template>
   <main class="main-feed">
     <PostItem 
@@ -15,7 +16,6 @@
 </template>
 
 <script>
-import { ref, onMounted } from 'vue'
 import PostItem from './PostItem.vue'
 import { useSocialData } from '../composables/useSocialData'
 
@@ -25,25 +25,23 @@ export default {
     PostItem
   },
   setup() {
-    // Sử dụng composable để quản lý posts và selection
     const { posts, selectedPostId, setSelectedPost } = useSocialData()
+    
+    // Xử lý khi post hiển thị trong viewport
+    const handlePostVisible = (postId) => {
+      setSelectedPost(postId)
+    }
+    
+    // Xử lý like bài viết
+    const handleLikePost = (postId) => {
+      // Logic like sẽ được thêm sau
+    }
     
     return {
       posts,
       selectedPostId,
-      setSelectedPost
-    }
-  },
-  methods: {
-    // Xử lý khi post hiển thị trong viewport
-    handlePostVisible(postId) {
-      this.setSelectedPost(postId)
-    },
-    
-    // Xử lý like bài viết
-    handleLikePost(postId) {
-      console.log('Like post:', postId)
-      // Logic like sẽ được thêm sau
+      handlePostVisible,
+      handleLikePost
     }
   }
 }

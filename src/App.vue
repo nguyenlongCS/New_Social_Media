@@ -1,6 +1,6 @@
 <!--
-src/App.vue
-Root application component với auth state management
+src/App.vue - Refactored
+Root component với auth state management đơn giản
 -->
 <template>
   <div id="app">
@@ -31,7 +31,6 @@ export default {
           isAuthLoading.value = false
         })
       } catch (error) {
-        console.error('Auth init error:', error)
         isAuthLoading.value = false
       }
     })

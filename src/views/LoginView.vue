@@ -1,18 +1,17 @@
 <!--
-src/views/LoginView.vue - Fixed Template + Logic
-Sửa template syntax error và đơn giản hóa logic
-Logic: Form đăng nhập/đăng ký với error handling
+src/views/LoginView.vue - Refactored
+Trang đăng nhập/đăng ký với error handling đơn giản
 -->
 <template>
   <div class="login-container">
     <div class="login-card">
-      <!-- Header với logo - UI từ Project 2 -->
+      <!-- Header -->
       <div class="login-header">
         <h1 class="logo">Social Media</h1>
         <p class="subtitle">Kết nối với bạn bè và thế giới xung quanh</p>
       </div>
       
-      <!-- Tab buttons - UI từ Project 2 -->
+      <!-- Tab buttons -->
       <div class="tab-buttons">
         <button 
           :class="{ active: activeTab === 'login' }"
@@ -28,7 +27,7 @@ Logic: Form đăng nhập/đăng ký với error handling
         </button>
       </div>
       
-      <!-- Form đăng nhập - UI từ Project 2 với logic từ Project 1 -->
+      <!-- Form đăng nhập -->
       <form v-if="activeTab === 'login'" @submit.prevent="handleLogin" class="auth-form">
         <div class="form-group">
           <label for="login-email">Email</label>
@@ -64,7 +63,6 @@ Logic: Form đăng nhập/đăng ký với error handling
           </button>
         </div>
         
-        <!-- Hiển thị lỗi - Logic từ Project 1 -->
         <div v-if="errorMessage" class="error-message">
           {{ errorMessage }}
         </div>
@@ -74,12 +72,10 @@ Logic: Form đăng nhập/đăng ký với error handling
           <span v-else>Đăng nhập</span>
         </button>
         
-        <!-- Divider - UI từ Project 2 -->
         <div class="divider">
           <span>hoặc</span>
         </div>
         
-        <!-- Social login buttons - UI từ Project 2 với logic từ Project 1 -->
         <div class="social-buttons">
           <button 
             type="button" 
@@ -103,7 +99,7 @@ Logic: Form đăng nhập/đăng ký với error handling
         </div>
       </form>
       
-      <!-- Form đăng ký - FIXED: Removed v-else" syntax error -->
+      <!-- Form đăng ký -->
       <form v-if="activeTab === 'register'" @submit.prevent="handleRegister" class="auth-form">
         <div class="form-group">
           <label for="register-email">Email</label>
@@ -138,12 +134,10 @@ Logic: Form đăng nhập/đăng ký với error handling
           >
         </div>
         
-        <!-- Hiển thị lỗi - Logic từ Project 1 -->
         <div v-if="errorMessage" class="error-message">
           {{ errorMessage }}
         </div>
         
-        <!-- Hiển thị lỗi confirm password - Logic từ Project 1 -->
         <div v-if="passwordError" class="error-message">
           {{ passwordError }}
         </div>
@@ -153,12 +147,10 @@ Logic: Form đăng nhập/đăng ký với error handling
           <span v-else>Đăng ký</span>
         </button>
         
-        <!-- Divider - UI từ Project 2 -->
         <div class="divider">
           <span>hoặc</span>
         </div>
         
-        <!-- Social login buttons cho register - UI từ Project 2 với logic từ Project 1 -->
         <div class="social-buttons">
           <button 
             type="button" 
@@ -182,7 +174,7 @@ Logic: Form đăng nhập/đăng ký với error handling
         </div>
       </form>
       
-      <!-- Success message cho forgot password - Logic từ Project 1 -->
+      <!-- Success message cho forgot password -->
       <div v-if="resetEmailSent" class="success-message">
         Email đặt lại mật khẩu đã được gửi. Vui lòng kiểm tra hộp thư của bạn.
       </div>
@@ -194,14 +186,11 @@ Logic: Form đăng nhập/đăng ký với error handling
 import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuth } from '../composables/useAuth'
-import { useErrorHandler } from '../composables/useErrorHandler'
 
 export default {
   name: 'LoginView',
   setup() {
     const router = useRouter()
-    
-    // Logic từ Project 1 - Authentication composable
     const { 
       loginWithEmail,
       signupWithEmail,
@@ -211,29 +200,23 @@ export default {
       isLoading
     } = useAuth()
     
-    // Logic từ Project 1 - Error handling
-    const { handleError, showSuccess } = useErrorHandler()
-    
-    // State cho tabs và forms - UI từ Project 2
     const activeTab = ref('login')
     const resetEmailSent = ref(false)
     const errorMessage = ref('')
     
-    // Form data cho đăng nhập - Mapping từ Project 2
     const loginForm = ref({
       email: '',
       password: '',
       rememberMe: false
     })
     
-    // Form data cho đăng ký - Mapping từ Project 2  
     const registerForm = ref({
       email: '',
       password: '',
       confirmPassword: ''
     })
     
-    // Validation cho confirm password - Logic từ Project 1
+    // Kiểm tra password confirm
     const passwordError = computed(() => {
       if (registerForm.value.confirmPassword && 
           registerForm.value.password !== registerForm.value.confirmPassword) {
@@ -242,57 +225,49 @@ export default {
       return ''
     })
 
-    // Xử lý đăng nhập - SIMPLIFIED
+    // Xử lý đăng nhập
     const handleLogin = async () => {
       errorMessage.value = ''
       
       try {
-        console.log('Attempting login with:', loginForm.value.email)
         const user = await loginWithEmail(
           loginForm.value.email, 
           loginForm.value.password
         )
         
         if (user) {
-          console.log('Login successful:', user.email)
-          showSuccess('login')
           router.push('/home')
         }
       } catch (error) {
-        console.error('Login error:', error)
-        errorMessage.value = handleError(error, 'login')
+        errorMessage.value = error.message || 'Đăng nhập thất bại!'
       }
     }
     
-    // Xử lý đăng nhập bằng Facebook
+    // Xử lý đăng nhập Facebook
     const handleFacebookLogin = async () => {
       errorMessage.value = ''
       
       try {
         const user = await loginWithFacebook()
-        
         if (user) {
-          showSuccess('login')
           router.push('/home')
         }
       } catch (error) {
-        errorMessage.value = handleError(error, 'facebook')
+        errorMessage.value = error.message || 'Đăng nhập Facebook thất bại!'
       }
     }
     
-    // Xử lý đăng nhập bằng Google
+    // Xử lý đăng nhập Google
     const handleGoogleLogin = async () => {
       errorMessage.value = ''
       
       try {
         const user = await loginWithGoogle()
-        
         if (user) {
-          showSuccess('login')
           router.push('/home')
         }
       } catch (error) {
-        errorMessage.value = handleError(error, 'google')
+        errorMessage.value = error.message || 'Đăng nhập Google thất bại!'
       }
     }
     
@@ -300,7 +275,6 @@ export default {
     const handleRegister = async () => {
       errorMessage.value = ''
       
-      // Kiểm tra mật khẩu xác nhận
       if (registerForm.value.password !== registerForm.value.confirmPassword) {
         return
       }
@@ -313,20 +287,15 @@ export default {
         )
         
         if (user) {
-          // Reset form đăng ký
           registerForm.value.email = ''
           registerForm.value.password = ''
           registerForm.value.confirmPassword = ''
-          
-          // Chuyển về tab đăng nhập
           activeTab.value = 'login'
           resetEmailSent.value = false
-          
-          // Hiển thị thông báo thành công
-          showSuccess('signup')
+          alert('Đăng ký thành công!')
         }
       } catch (error) {
-        errorMessage.value = handleError(error, 'signup')
+        errorMessage.value = error.message || 'Đăng ký thất bại!'
       }
     }
     
@@ -341,9 +310,8 @@ export default {
         await resetPassword(loginForm.value.email)
         resetEmailSent.value = true
         errorMessage.value = ''
-        showSuccess('reset')
       } catch (error) {
-        errorMessage.value = handleError(error, 'reset')
+        errorMessage.value = error.message || 'Gửi email đặt lại mật khẩu thất bại!'
       }
     }
 
@@ -355,7 +323,6 @@ export default {
     }
     
     return {
-      // State
       activeTab,
       resetEmailSent,
       errorMessage,
@@ -363,8 +330,6 @@ export default {
       registerForm,
       passwordError,
       isLoading,
-      
-      // Methods
       handleLogin,
       handleFacebookLogin,
       handleGoogleLogin,
@@ -377,7 +342,6 @@ export default {
 </script>
 
 <style scoped>
-/* UI Styles từ Project 2 - Giữ nguyên toàn bộ */
 .login-container {
   min-height: 100vh;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);

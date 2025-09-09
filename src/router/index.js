@@ -1,6 +1,6 @@
 /*
-src/router/index.js
-Router với auth guards
+src/router/index.js - Refactored
+Router với auth guards đơn giản
 */
 import { createRouter, createWebHistory } from 'vue-router'
 import HomeView from '../views/HomeView.vue'
@@ -60,7 +60,6 @@ router.beforeEach(async (to, from, next) => {
     
     next()
   } catch (error) {
-    console.error('Auth check error:', error)
     if (to.path !== '/login') {
       next('/login')
     } else {

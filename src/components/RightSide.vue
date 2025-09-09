@@ -1,6 +1,7 @@
-<!-- src/components/RightSide.vue -->
-<!-- Component sidebar bên phải hiển thị chi tiết bài viết -->
-
+<!--
+src/components/RightSide.vue - Refactored
+Sidebar bên phải hiển thị chi tiết bài viết
+-->
 <template>
   <aside class="right-panel">
     <div id="post-info" class="post-details">
@@ -52,29 +53,26 @@ import { useSocialData } from '../composables/useSocialData'
 export default {
   name: 'RightSide',
   setup() {
-    const commentText = ref('') // Text input comment
-    
-    // Sử dụng composable
+    const commentText = ref('')
     const { getSelectedPost } = useSocialData()
     
-    // Computed để lấy post được chọn
+    // Lấy post được chọn
     const selectedPost = computed(() => {
       return getSelectedPost()
     })
     
+    // Xử lý thêm comment
+    const handleAddComment = () => {
+      if (commentText.value.trim()) {
+        // Logic thêm comment sẽ được thêm sau
+        commentText.value = ''
+      }
+    }
+    
     return {
       commentText,
-      selectedPost
-    }
-  },
-  methods: {
-    // Xử lý thêm comment
-    handleAddComment() {
-      if (this.commentText.trim()) {
-        console.log('Add comment:', this.commentText)
-        // Logic thêm comment sẽ được thêm sau
-        this.commentText = ''
-      }
+      selectedPost,
+      handleAddComment
     }
   }
 }

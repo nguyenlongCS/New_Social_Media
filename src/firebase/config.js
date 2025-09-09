@@ -1,7 +1,6 @@
 /*
-src/firebase/config.js - Cấu hình Firebase Tích hợp
-Kết hợp cấu hình Firebase từ Project 1 với structure từ Project 2
-Logic: Khởi tạo Firebase Auth, Firestore, Storage, Realtime Database
+src/firebase/config.js - Refactored
+Cấu hình Firebase với các services cần thiết
 */
 
 import { initializeApp } from 'firebase/app'
@@ -10,7 +9,7 @@ import { getFirestore } from 'firebase/firestore'
 import { getStorage } from 'firebase/storage'
 import { getDatabase } from 'firebase/database'
 
-// Cấu hình Firebase từ Project 1 (đã hoạt động)
+// Cấu hình Firebase
 const firebaseConfig = {
   apiKey: "AIzaSyAr4nGRhlqXyoHG7dZtqcbj-IN2Xcr0LqM",
   authDomain: "fir-auth-cozy.firebaseapp.com",
@@ -25,17 +24,10 @@ const firebaseConfig = {
 // Khởi tạo Firebase App
 const app = initializeApp(firebaseConfig)
 
-// Khởi tạo Firebase Authentication - Sử dụng trong useAuth
+// Khởi tạo các services
 export const auth = getAuth(app)
-
-// Khởi tạo Firestore Database - Sử dụng cho collections
 export const db = getFirestore(app)
-
-// Khởi tạo Firebase Storage - Sử dụng cho upload files
 export const storage = getStorage(app)
-
-// Khởi tạo Realtime Database - Sử dụng cho messages real-time
 export const rtdb = getDatabase(app)
 
-// Export default app để sử dụng trong composables
 export default app

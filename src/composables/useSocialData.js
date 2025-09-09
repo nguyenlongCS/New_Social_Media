@@ -1,6 +1,8 @@
-// src/composables/useSocialData.js
-// Composable tổng hợp quản lý tất cả dữ liệu social media (posts, friends, selection)
-
+/*
+src/composables/useSocialData.js - Refactored
+Composable quản lý dữ liệu social media (posts, friends, selection)
+Loại bỏ code dư thừa, giữ nguyên chức năng cốt lõi
+*/
 import { ref } from 'vue'
 
 // Mock data cho posts
@@ -85,107 +87,20 @@ const mockFriends = [
   { id: 4, name: "David Brown" }
 ]
 
-// States reactive để lưu trữ dữ liệu
+// States reactive
 const posts = ref(mockPosts)
 const friends = ref(mockFriends)
 const selectedPostId = ref(null)
 
 export function useSocialData() {
-  // === POSTS FUNCTIONS ===
-  
-  // Lấy tất cả posts
-  const getAllPosts = () => {
-    return posts.value
-  }
-  
   // Lấy post theo ID
   const getPostById = (id) => {
     return posts.value.find(post => post.id === parseInt(id))
   }
   
-  // Thêm post mới
-  const addPost = (newPost) => {
-    const post = {
-      id: Date.now(), // Tạo ID đơn giản
-      ...newPost,
-      likes: 0,
-      comments: [],
-      timestamp: 'Just now'
-    }
-    posts.value.unshift(post) // Thêm vào đầu danh sách
-    return post
-  }
-  
-  // Cập nhật số like
-  const updateLikes = (postId, newLikeCount) => {
-    const post = getPostById(postId)
-    if (post) {
-      post.likes = newLikeCount
-    }
-  }
-  
-  // Thêm comment vào post
-  const addComment = (postId, comment) => {
-    const post = getPostById(postId)
-    if (post) {
-      post.comments.push(comment)
-    }
-  }
-  
-  // === FRIENDS FUNCTIONS ===
-  
-  // Lấy tất cả bạn bè
-  const getAllFriends = () => {
-    return friends.value
-  }
-  
-  // Lấy bạn bè theo ID
-  const getFriendById = (id) => {
-    return friends.value.find(friend => friend.id === parseInt(id))
-  }
-  
-  // Thêm bạn bè mới
-  const addFriend = (newFriend) => {
-    const friend = {
-      id: Date.now(), // Tạo ID đơn giản
-      ...newFriend
-    }
-    friends.value.push(friend)
-    return friend
-  }
-  
-  // Xóa bạn bè
-  const removeFriend = (friendId) => {
-    const index = friends.value.findIndex(friend => friend.id === parseInt(friendId))
-    if (index !== -1) {
-      friends.value.splice(index, 1)
-      return true
-    }
-    return false
-  }
-  
-  // Tìm kiếm bạn bè theo tên
-  const searchFriends = (searchTerm) => {
-    return friends.value.filter(friend => 
-      friend.name.toLowerCase().includes(searchTerm.toLowerCase())
-    )
-  }
-  
-  // === POST SELECTION FUNCTIONS ===
-  
   // Thiết lập post được chọn
   const setSelectedPost = (postId) => {
     selectedPostId.value = postId
-  }
-  
-  // Xóa selection
-  const clearSelection = () => {
-    selectedPostId.value = null
-  }
-  
-  // Kiểm tra post có được chọn không
-  const isPostSelected = (postId) => {
-    return selectedPostId.value === postId
   }
   
   // Lấy post được chọn hiện tại
@@ -194,29 +109,11 @@ export function useSocialData() {
   }
   
   return {
-    // Data
     posts: posts.value,
     friends: friends.value,
     selectedPostId,
-    
-    // Posts functions
-    getAllPosts,
     getPostById,
-    addPost,
-    updateLikes,
-    addComment,
-    
-    // Friends functions
-    getAllFriends,
-    getFriendById,
-    addFriend,
-    removeFriend,
-    searchFriends,
-    
-    // Selection functions
     setSelectedPost,
-    clearSelection,
-    isPostSelected,
     getSelectedPost
   }
 }

@@ -1,6 +1,7 @@
-<!-- src/components/LeftSide.vue.vue -->
-<!-- Component sidebar bên trái chứa menu và danh sách bạn bè -->
-
+<!--
+src/components/LeftSide.vue - Refactored
+Sidebar bên trái với menu và danh sách bạn bè
+-->
 <template>
   <aside class="left-menu">
     <nav>
@@ -45,44 +46,38 @@
 import { useSocialData } from '../composables/useSocialData'
 
 export default {
-  name: 'LeftSide.vue',
+  name: 'LeftSide',
   setup() {
-    // Sử dụng composable để quản lý danh sách bạn bè
     const { friends } = useSocialData()
     
-    return {
-      friends
-    }
-  },
-  methods: {
-    // Xử lý click tạo bài viết
-    handleCreatePost() {
-      console.log('Create post clicked')
+    // Xử lý các button click (chưa implement logic chi tiết)
+    const handleCreatePost = () => {
       // Logic tạo bài viết sẽ được thêm sau
-    },
+    }
     
-    // Xử lý click khám phá
-    handleDiscover() {
-      console.log('Discover clicked')
+    const handleDiscover = () => {
       // Logic khám phá sẽ được thêm sau
-    },
+    }
     
-    // Xử lý click admin
-    handleAdmin() {
-      console.log('Admin clicked')
+    const handleAdmin = () => {
       // Logic admin sẽ được thêm sau
-    },
+    }
     
-    // Xử lý click cài đặt
-    handleSetting() {
-      console.log('Setting clicked')
+    const handleSetting = () => {
       // Logic cài đặt sẽ được thêm sau
-    },
+    }
     
-    // Xử lý click vào bạn bè
-    handleFriendClick(friend) {
-      console.log('Friend clicked:', friend.name)
+    const handleFriendClick = (friend) => {
       // Logic xem profile bạn bè sẽ được thêm sau
+    }
+    
+    return {
+      friends,
+      handleCreatePost,
+      handleDiscover,
+      handleAdmin,
+      handleSetting,
+      handleFriendClick
     }
   }
 }

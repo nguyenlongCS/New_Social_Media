@@ -1,6 +1,7 @@
-<!-- src/components/PostItem.vue -->
-<!-- Component hiển thị một bài viết đơn lẻ -->
-
+<!--
+src/components/PostItem.vue - Refactored
+Component hiển thị một bài viết đơn lẻ
+-->
 <template>
   <div 
     class="post" 
@@ -61,7 +62,7 @@ export default {
         })
       }, {
         root: null,
-        threshold: 0.6 // 60% post nằm trong khung nhìn thì tính là active
+        threshold: 0.6
       })
       
       if (postElement.value) {
@@ -70,26 +71,26 @@ export default {
     })
     
     onUnmounted(() => {
-      // Cleanup observer
       if (observer && postElement.value) {
         observer.unobserve(postElement.value)
       }
     })
     
-    return {
-      postElement
-    }
-  },
-  methods: {
     // Xử lý lỗi load ảnh
-    handleImageError(event) {
+    const handleImageError = (event) => {
       event.target.style.display = 'none'
       event.target.parentElement.innerText = 'Image failed to load'
-    },
+    }
     
     // Xử lý like bài viết
-    handleLike() {
-      this.$emit('like-post', this.post.id)
+    const handleLike = () => {
+      emit('like-post', props.post.id)
+    }
+    
+    return {
+      postElement,
+      handleImageError,
+      handleLike
     }
   }
 }
