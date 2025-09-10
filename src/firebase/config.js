@@ -1,6 +1,6 @@
 /*
 src/firebase/config.js - Refactored
-Cấu hình Firebase với database: social-media-web-database
+Cấu hình Firebase với database: social-media-web-database và Storage bucket
 */
 
 import { initializeApp } from 'firebase/app'
@@ -30,7 +30,9 @@ export const auth = getAuth(app)
 // Khởi tạo Firestore với database cụ thể: social-media-web-database
 export const db = getFirestore(app, 'social-media-web-database')
 
-export const storage = getStorage(app)
+// Khởi tạo Storage với bucket tùy chỉnh cho social-media-web
+export const storage = getStorage(app, 'gs://social-media-web')
+
 export const rtdb = getDatabase(app)
 
 export default app
