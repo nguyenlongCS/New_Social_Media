@@ -1,6 +1,6 @@
 <!--
-src/App.vue - Refactored
-Root component với auth state management đơn giản
+src/App.vue - Fixed Version
+Root component với useAuthUser thay vì useAuth để quản lý auth state nhất quán
 -->
 <template>
   <div id="app">
@@ -16,23 +16,18 @@ Root component với auth state management đơn giản
 </template>
 
 <script>
-import { ref, onMounted, onUnmounted } from 'vue'
-import { useAuth } from './composables/useAuth'
+import { onMounted, onUnmounted } from 'vue'
+import { useAuthUser } from './composables/useAuthUser'
 
 export default {
   name: 'App',
   setup() {
-    const isAuthLoading = ref(true)
-    const { initAuth, cleanup } = useAuth()
+    // Sử dụng useAuthUser thay vì useAuth để quản lý auth state nhất quán
+    const { isAuthLoading, initAuthListener, cleanup } = useAuthUser()
     
     onMounted(() => {
-      try {
-        initAuth(() => {
-          isAuthLoading.value = false
-        })
-      } catch (error) {
-        isAuthLoading.value = false
-      }
+      // Khởi tạo auth listener (tự động được gọi trong useAuthUser)
+      initAuthListener()
     })
 
     onUnmounted(() => {

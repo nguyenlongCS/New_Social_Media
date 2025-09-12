@@ -1,6 +1,6 @@
 <!--
 src/components/LeftSide.vue - Refactored
-Sidebar bên trái với menu và danh sách bạn bè
+Sidebar bên trái với menu navigation, loại bỏ friends list
 -->
 <template>
   <aside class="left-menu">
@@ -21,38 +21,21 @@ Sidebar bên trái với menu và danh sách bạn bè
         <img src="/src/assets/icons/setting.png" alt="Setting" width="18" height="18">
         <span>Setting</span>
       </button>
-      
-      <hr>
-      
-      <div class="friends-list">
-        <h3>Friends</h3>
-        <div id="friends-container">
-          <div 
-            v-for="friend in friends" 
-            :key="friend.id"
-            class="friend"
-            @click="handleFriendClick(friend)"
-          >
-            <div class="friend-avatar"></div>
-            <span class="friend-name">{{ friend.name }}</span>
-          </div>
-        </div>
-      </div>
     </nav>
   </aside>
 </template>
 
 <script>
-import { useSocialData } from '../composables/useSocialData'
+import { useRouter } from 'vue-router'
 
 export default {
   name: 'LeftSide',
   setup() {
-    const { friends } = useSocialData()
+    const router = useRouter()
     
-    // Xử lý các button click (chưa implement logic chi tiết)
+    // Xử lý tạo bài viết - chuyển đến trang create post
     const handleCreatePost = () => {
-      // Logic tạo bài viết sẽ được thêm sau
+      router.push('/create-post')
     }
     
     const handleDiscover = () => {
@@ -67,17 +50,11 @@ export default {
       // Logic cài đặt sẽ được thêm sau
     }
     
-    const handleFriendClick = (friend) => {
-      // Logic xem profile bạn bè sẽ được thêm sau
-    }
-    
     return {
-      friends,
       handleCreatePost,
       handleDiscover,
       handleAdmin,
-      handleSetting,
-      handleFriendClick
+      handleSetting
     }
   }
 }

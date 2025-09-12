@@ -1,6 +1,6 @@
 <!--
-src/components/Header.vue - Refactored
-Header với navigation và logout functionality
+src/components/Header.vue - Fixed Version
+Header với navigation và logout functionality sử dụng useAuthUser - Icons PNG
 -->
 <template>
   <header class="top-bar">
@@ -35,7 +35,7 @@ Header với navigation và logout functionality
       >
       
       <button class="logout-btn" @click="handleLogout" :disabled="isLoading">
-        <img src="/src/assets/icons/logout.png" alt="Logout" width="18" height="18">
+        <img src="/src/assets/icons/logout.png" alt="Logout" width="16" height="16">
         <span v-if="isLoading">Đang đăng xuất...</span>
         <span v-else>Logout</span>
       </button>
@@ -51,14 +51,20 @@ Header với navigation và logout functionality
 <script>
 import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
+import { useAuthUser } from '../composables/useAuthUser'
 import { useAuth } from '../composables/useAuth'
 
 export default {
   name: 'Header',
   setup() {
     const router = useRouter()
-    const { user, logout, isLoading, cleanup } = useAuth()
     const searchQuery = ref('')
+    
+    // Sử dụng useAuthUser cho user state
+    const { user, isLoggedIn } = useAuthUser()
+    
+    // Sử dụng useAuth chỉ cho logout function
+    const { logout, isLoading, cleanup } = useAuth()
     
     // Tạo initials cho default avatar
     const userInitials = computed(() => {
@@ -96,6 +102,7 @@ export default {
     
     return {
       user,
+      isLoggedIn,
       isLoading,
       searchQuery,
       userInitials,

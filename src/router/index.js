@@ -1,11 +1,12 @@
 /*
 src/router/index.js - Refactored
-Router với auth guards đơn giản và route /profile
+Router với auth guards đơn giản và route /profile, /create-post
 */
 import { createRouter, createWebHistory } from 'vue-router'
 import HomeView from '../views/HomeView.vue'
 import LoginView from '../views/LoginView.vue'
 import ProfileView from '../views/ProfileView.vue'
+import CreatePostView from '../views/CreatePostView.vue'
 
 const router = createRouter({
   history: createWebHistory('/'),
@@ -24,6 +25,12 @@ const router = createRouter({
       path: '/profile',
       name: 'profile',
       component: ProfileView,
+      meta: { requiresAuth: true }
+    },
+    {
+      path: '/create-post',
+      name: 'createPost',
+      component: CreatePostView,
       meta: { requiresAuth: true }
     },
     {

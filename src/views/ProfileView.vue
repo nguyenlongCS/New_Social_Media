@@ -110,7 +110,7 @@ Hiển thị và chỉnh sửa thông tin cá nhân, upload avatar với icon ca
 import { ref, onMounted, computed } from 'vue'
 import Header from '../components/Header.vue'
 import LeftSide from '../components/LeftSide.vue'
-import { useAuth } from '../composables/useAuth'
+import { useAuthUser } from '../composables/useAuthUser'
 import { useProfile } from '../composables/useProfile'
 
 export default {
@@ -120,7 +120,9 @@ export default {
     LeftSide
   },
   setup() {
-    const { user } = useAuth()
+    // Sử dụng useAuthUser để giải quyết vấn đề auth state
+    const { user, isAuthLoading, waitForUserWithTimeout } = useAuthUser()
+    
     const {
       profileData,
       isLoading,
@@ -165,6 +167,11 @@ export default {
     // Xử lý lưu profile - bao gồm cả avatar nếu có
     const handleSaveProfile = async () => {
       try {
+        // Đợi user được khởi tạo nếu cần
+        if (!user.value) {
+          await waitForUserWithTimeout(3000)
+        }
+        
         // Upload avatar trước nếu có file được chọn
         if (selectedAvatarFile.value) {
           const avatarUploaded = await uploadAvatar()
@@ -187,22 +194,22 @@ export default {
     
     // Load data khi component mount
     onMounted(async () => {
-      if (user.value?.uid) {
-        await loadUserProfile(user.value.uid)
-      } else {
-        // Nếu chưa có user, đợi auth state
-        const { onAuthStateChanged } = await import('firebase/auth')
-        const { auth } = await import('@/firebase/config')
-        
-        onAuthStateChanged(auth, async (authUser) => {
-          if (authUser) {
-            await loadUserProfile(authUser.uid)
-          }
-        })
+      try {
+        const currentUser = await waitForUserWithTimeout(3000)
+        if (currentUser?.uid) {
+          await loadUserProfile(currentUser.uid)
+        }
+      } catch (error) {
+        // Fallback: thử với user hiện tại nếu có
+        if (user.value?.uid) {
+          await loadUserProfile(user.value.uid)
+        }
       }
     })
     
     return {
+      user,
+      isAuthLoading,
       profileData,
       isLoading,
       isSaving,

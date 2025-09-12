@@ -1,9 +1,16 @@
 <!--
-src/components/PostFeed.vue - Refactored
-Component hiển thị danh sách bài viết trong feed chính
+src/components/PostFeed.vue - Updated Version
+Component hiển thị danh sách bài viết với real-time data từ Firestore - Shared instance
 -->
 <template>
   <main class="main-feed">
+    <!-- Loading state -->
+    <div v-if="isLoading && posts.length === 0" class="loading-posts">
+      <div class="spinner"></div>
+      <p>Đang tải bài viết...</p>
+    </div>
+    
+    <!-- Posts list -->
     <PostItem 
       v-for="post in posts"
       :key="post.id"
@@ -12,12 +19,31 @@ Component hiển thị danh sách bài viết trong feed chính
       @post-visible="handlePostVisible"
       @like-post="handleLikePost"
     />
+    
+    <!-- Empty state -->
+    <div v-if="!isLoading && posts.length === 0" class="empty-posts">
+      <h3>Chưa có bài viết nào</h3>
+      <p>Hãy là người đầu tiên chia sẻ khoảnh khắc của bạn!</p>
+    </div>
+    
+    <!-- Load more button -->
+    <div v-if="hasMore && posts.length > 0" class="load-more-container">
+      <button 
+        @click="handleLoadMore" 
+        :disabled="isLoading"
+        class="load-more-btn"
+      >
+        <span v-if="isLoading">Đang tải...</span>
+        <span v-else>Tải thêm bài viết</span>
+      </button>
+    </div>
   </main>
 </template>
 
 <script>
+import { onMounted, onUnmounted } from 'vue'
 import PostItem from './PostItem.vue'
-import { useSocialData } from '../composables/useSocialData'
+import { usePosts } from '../composables/usePosts'
 
 export default {
   name: 'PostFeed',
@@ -25,24 +51,123 @@ export default {
     PostItem
   },
   setup() {
-    const { posts, selectedPostId, setSelectedPost } = useSocialData()
+    // Sử dụng trực tiếp usePosts
+    const { 
+      posts, 
+      isLoading, 
+      hasMore,
+      selectedPostId, 
+      loadPosts,
+      loadMorePosts,
+      setSelectedPost,
+      toggleLike,
+      cleanup
+    } = usePosts()
+    
+    // Load posts khi component mount
+    onMounted(() => {
+      console.log('PostFeed mounted, posts length:', posts.value.length) // Debug
+      if (posts.value.length === 0) {
+        loadPosts(10) // Load 10 posts đầu tiên
+      }
+    })
+    
+    // Cleanup khi component unmount
+    onUnmounted(() => {
+      cleanup()
+    })
     
     // Xử lý khi post hiển thị trong viewport
     const handlePostVisible = (postId) => {
+      console.log('PostFeed - Post visible:', postId) // Debug
       setSelectedPost(postId)
     }
     
     // Xử lý like bài viết
     const handleLikePost = (postId) => {
-      // Logic like sẽ được thêm sau
+      console.log('PostFeed - Like post:', postId) // Debug
+      toggleLike(postId)
+    }
+    
+    // Xử lý load thêm posts
+    const handleLoadMore = () => {
+      loadMorePosts(10)
     }
     
     return {
       posts,
+      isLoading,
+      hasMore,
       selectedPostId,
       handlePostVisible,
-      handleLikePost
+      handleLikePost,
+      handleLoadMore
     }
   }
 }
 </script>
+
+<style scoped>
+.loading-posts,
+.empty-posts {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem 1rem;
+  text-align: center;
+}
+
+.loading-posts .spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid #e5e7eb;
+  border-top: 4px solid #2563eb;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 1rem;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.loading-posts p,
+.empty-posts p {
+  color: #6b7280;
+  margin: 0;
+}
+
+.empty-posts h3 {
+  color: #374151;
+  margin: 0 0 0.5rem 0;
+}
+
+.load-more-container {
+  display: flex;
+  justify-content: center;
+  padding: 2rem 1rem;
+}
+
+.load-more-btn {
+  padding: 0.75rem 1.5rem;
+  background: #f1f5f9;
+  color: #374151;
+  border: 1px solid #d1d5db;
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.load-more-btn:hover:not(:disabled) {
+  background: #e2e8f0;
+}
+
+.load-more-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+</style>
