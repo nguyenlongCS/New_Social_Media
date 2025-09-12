@@ -72,9 +72,7 @@ Trang đăng nhập/đăng ký với error handling đơn giản
           <span v-else>Đăng nhập</span>
         </button>
         
-        <div class="divider">
-          <span>hoặc</span>
-        </div>
+        <div class="divider"></div>
         
         <div class="social-buttons">
           <button 
