@@ -1,6 +1,7 @@
 /*
 src/composables/usePosts.js - Composable quản lý posts từ Firestore
-Load posts từ collection "posts", real-time updates, pagination - Singleton pattern
+Load posts từ collection "posts", real-time updates, pagination, like/comment integration - Singleton pattern
+Fixed: Load comments khi chọn post, track liked status
 */
 import { ref, computed } from 'vue'
 import { 
@@ -13,6 +14,8 @@ import {
   getDocs
 } from 'firebase/firestore'
 import { db } from '@/firebase/config'
+import { useLikes } from './useLikes'
+import { useComments } from './useComments'
 
 // Singleton state - shared across all components
 let postsState = null
@@ -26,6 +29,9 @@ function createPostsState() {
   
   // Post được chọn hiện tại
   const selectedPostId = ref(null)
+  
+  // Lưu trạng thái liked của từng post cho user hiện tại
+  const userLikedPosts = ref(new Set())
   
   // Lấy post được chọn
   const selectedPost = computed(() => {
@@ -57,6 +63,26 @@ function createPostsState() {
     }
   }
   
+  // Load liked status cho user
+  const loadUserLikedPosts = async (user) => {
+    if (!user?.uid) return
+    
+    const likes = useLikes()
+    const currentUserLiked = new Set()
+    
+    // Load liked posts cho user hiện tại
+    for (const post of posts.value) {
+      const isLiked = await likes.checkUserLikedPost(user.uid, post.id)
+      if (isLiked) {
+        currentUserLiked.add(post.id)
+      }
+      // Cập nhật isLiked cho post
+      post.isLiked = isLiked
+    }
+    
+    userLikedPosts.value = currentUserLiked
+  }
+  
   // Load posts từ Firestore với real-time updates
   const loadPosts = (limitCount = 10) => {
     if (isLoading.value) return
@@ -72,11 +98,20 @@ function createPostsState() {
       )
       
       // Thiết lập real-time listener
-      unsubscribe.value = onSnapshot(postsQuery, (snapshot) => {
+      unsubscribe.value = onSnapshot(postsQuery, async (snapshot) => {
         const newPosts = []
         
-        snapshot.forEach((doc) => {
+        // Import useLikes và useComments để load data
+        const likes = useLikes()
+        const comments = useComments()
+        
+        for (const doc of snapshot.docs) {
           const postData = doc.data()
+          
+          // Load likes và comments count cho mỗi post
+          const likesCount = await likes.getPostLikesCount(doc.id)
+          const commentsCount = await comments.getPostCommentsCount(doc.id)
+          
           newPosts.push({
             id: doc.id,
             title: postData.Caption || 'Untitled Post',
@@ -90,11 +125,12 @@ function createPostsState() {
             image: postData.MediaUrl || '', // URL của media đầu tiên
             mediaItems: postData.mediaItems || [], // Danh sách tất cả media
             mediaCount: postData.mediaCount || 0,
-            likes: postData.likes || 0,
-            commentsCount: postData.comments || 0,
-            comments: [] // Comments sẽ được load riêng khi cần
+            likes: likesCount,
+            commentsCount: commentsCount,
+            comments: [], // Comments sẽ được load khi cần
+            isLiked: false // Sẽ được cập nhật khi load user liked posts
           })
-        })
+        }
         
         posts.value = newPosts
         isLoading.value = false
@@ -131,10 +167,20 @@ function createPostsState() {
       )
       
       const snapshot = await getDocs(nextQuery)
+      
+      // Import useLikes và useComments
+      const likes = useLikes()
+      const comments = useComments()
+      
       const morePosts = []
       
-      snapshot.forEach((doc) => {
+      for (const doc of snapshot.docs) {
         const postData = doc.data()
+        
+        // Load likes và comments count
+        const likesCount = await likes.getPostLikesCount(doc.id)
+        const commentsCount = await comments.getPostCommentsCount(doc.id)
+        
         morePosts.push({
           id: doc.id,
           title: postData.Caption || 'Untitled Post',
@@ -148,11 +194,12 @@ function createPostsState() {
           image: postData.MediaUrl || '',
           mediaItems: postData.mediaItems || [],
           mediaCount: postData.mediaCount || 0,
-          likes: postData.likes || 0,
-          commentsCount: postData.comments || 0,
-          comments: []
+          likes: likesCount,
+          commentsCount: commentsCount,
+          comments: [],
+          isLiked: false
         })
-      })
+      }
       
       // Thêm posts mới vào danh sách hiện tại
       posts.value = [...posts.value, ...morePosts]
@@ -180,10 +227,85 @@ function createPostsState() {
     return posts.value.find(post => post.id === postId) || null
   }
   
-  // Like/Unlike post (sẽ được implement sau)
-  const toggleLike = async (postId) => {
-    // TODO: Implement like functionality
-    console.log('Toggle like for post:', postId)
+  // Like/Unlike post - tích hợp với useLikes và useComments
+  const toggleLike = async (postId, user) => {
+    if (!postId || !user) return
+    
+    const post = posts.value.find(p => p.id === postId)
+    if (!post) return
+    
+    const likes = useLikes()
+    
+    try {
+      const result = await likes.toggleLike(user, postId)
+      
+      // Cập nhật likes count và liked status
+      const newLikesCount = await likes.getPostLikesCount(postId)
+      post.likes = newLikesCount
+      post.isLiked = result.liked
+      
+      // Cập nhật userLikedPosts set
+      if (result.liked) {
+        userLikedPosts.value.add(postId)
+      } else {
+        userLikedPosts.value.delete(postId)
+      }
+      
+    } catch (error) {
+      console.error('Error toggling like:', error)
+    }
+  }
+  
+  // Load comments cho post được chọn - Fixed để luôn load fresh data
+  const loadPostComments = async (postId) => {
+    if (!postId) return
+    
+    const comments = useComments()
+    
+    try {
+      // Luôn load fresh comments từ Firestore
+      const postComments = await comments.getPostComments(postId)
+      
+      // Cập nhật comments cho post được chọn
+      const post = posts.value.find(p => p.id === postId)
+      if (post) {
+        // Force update comments array
+        post.comments = [...postComments]
+        post.commentsCount = postComments.length
+      }
+      
+      console.log(`Loaded ${postComments.length} comments for post ${postId}`)
+      return postComments
+      
+    } catch (error) {
+      console.error('Error loading comments:', error)
+      return []
+    }
+  }
+  
+  // Thêm comment cho post
+  const addCommentToPost = async (postId, user, commentText) => {
+    if (!postId || !user || !commentText?.trim()) return
+    
+    const comments = useComments()
+    
+    try {
+      const newComment = await comments.addComment(user, postId, commentText)
+      
+      // Cập nhật comments locally
+      const post = posts.value.find(p => p.id === postId)
+      if (post) {
+        if (!post.comments) post.comments = []
+        post.comments.unshift(newComment) // Thêm vào đầu danh sách
+        post.commentsCount = post.comments.length
+      }
+      
+      return newComment
+      
+    } catch (error) {
+      console.error('Error adding comment:', error)
+      throw error
+    }
   }
   
   // Cleanup listener
@@ -202,6 +324,7 @@ function createPostsState() {
     lastDoc.value = null
     hasMore.value = true
     isLoading.value = false
+    userLikedPosts.value.clear()
   }
   
   return {
@@ -210,11 +333,15 @@ function createPostsState() {
     hasMore,
     selectedPostId,
     selectedPost,
+    userLikedPosts,
     loadPosts,
     loadMorePosts,
+    loadUserLikedPosts,
     setSelectedPost,
     getPostById,
     toggleLike,
+    loadPostComments,
+    addCommentToPost,
     cleanup,
     resetPosts
   }

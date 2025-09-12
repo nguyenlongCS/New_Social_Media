@@ -1,6 +1,6 @@
 <!--
-src/components/PostItem.vue - Fixed Media Display
-Component hiển thị một bài viết với media carousel đẹp mắt, fix vấn đề single media và sizing
+src/components/PostItem.vue - Fixed Version
+Component hiển thị một bài viết với media carousel - Fixed like icon chuyển đổi
 -->
 <template>
   <div class="post" :data-post-id="post.id" ref="postElement">
@@ -69,9 +69,15 @@ Component hiển thị một bài viết với media carousel đẹp mắt, fix 
     </div>
 
     <div class="actions">
-      <button @click="handleLike">
-        <img src="/src/assets/icons/like.png" alt="Like" width="16" height="16">
-        <span>Like ({{ post.likes }})</span>
+      <button @click="handleLike" :disabled="isLiking" :class="{ liked: post.isLiked }">
+        <img :src="post.isLiked ? '/src/assets/icons/liked.png' : '/src/assets/icons/like.png'" 
+             :alt="post.isLiked ? 'Liked' : 'Like'" width="16" height="16">
+        <span v-if="isLiking">Đang xử lý...</span>
+        <span v-else>{{ post.isLiked ? 'Liked' : 'Like' }} ({{ post.likes || 0 }})</span>
+      </button>
+      <button @click="handleComment">
+        <img src="/src/assets/icons/comment.png" alt="Comment" width="16" height="16">
+        <span>Comment ({{ post.commentsCount || 0 }})</span>
       </button>
     </div>
   </div>
@@ -92,6 +98,7 @@ export default {
   setup(props, { emit }) {
     const postElement = ref(null)
     const currentMediaIndex = ref(0)
+    const isLiking = ref(false)
     let observer = null
 
     // Computed để xử lý media items với fallback tốt hơn
@@ -180,20 +187,44 @@ export default {
     }
 
     // Xử lý like bài viết
-    const handleLike = () => {
-      emit('like-post', props.post.id)
+    const handleLike = async () => {
+      if (isLiking.value) return
+      
+      isLiking.value = true
+      try {
+        emit('like-post', props.post.id)
+      } finally {
+        // Reset isLiking sau 1 giây để tránh spam
+        setTimeout(() => {
+          isLiking.value = false
+        }, 1000)
+      }
+    }
+    
+    // Xử lý comment - scroll đến phần comment ở RightSide
+    const handleComment = () => {
+      emit('post-visible', props.post.id)
+      // Focus vào comment input nếu có thể
+      setTimeout(() => {
+        const commentInput = document.querySelector('.comment-input')
+        if (commentInput) {
+          commentInput.focus()
+        }
+      }, 100)
     }
 
     return {
       postElement,
       currentMediaIndex,
+      isLiking,
       mediaItems,
       hasMedia,
       nextMedia,
       prevMedia,
       goToMedia,
       handleMediaError,
-      handleLike
+      handleLike,
+      handleComment
     }
   }
 }
@@ -443,14 +474,29 @@ export default {
   color: #6b7280;
   font-size: 0.875rem;
   cursor: pointer;
-  transition: color 0.2s ease;
+  transition: all 0.2s ease;
   padding: 0.5rem;
   border-radius: 0.5rem;
 }
 
-.actions button:hover {
+.actions button:hover:not(:disabled) {
   color: #2563eb;
   background: #f1f5f9;
+}
+
+.actions button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Liked button styling */
+.actions button.liked {
+  color: #dc2626;
+}
+
+.actions button.liked:hover:not(:disabled) {
+  color: #dc2626;
+  background: #fef2f2;
 }
 
 .actions img {

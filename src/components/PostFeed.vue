@@ -1,6 +1,6 @@
 <!--
-src/components/PostFeed.vue - Updated Version
-Component hiển thị danh sách bài viết với real-time data từ Firestore - Shared instance
+src/components/PostFeed.vue - Fixed Version
+Component hiển thị danh sách bài viết với real-time data từ Firestore, load user liked posts
 -->
 <template>
   <main class="main-feed">
@@ -34,16 +34,17 @@ Component hiển thị danh sách bài viết với real-time data từ Firestor
         class="load-more-btn"
       >
         <span v-if="isLoading">Đang tải...</span>
-        <span v-else>Tải thêm bài viết</span>
+        <span v-else">Tải thêm bài viết</span>
       </button>
     </div>
   </main>
 </template>
 
 <script>
-import { onMounted, onUnmounted } from 'vue'
+import { onMounted, onUnmounted, watch } from 'vue'
 import PostItem from './PostItem.vue'
 import { usePosts } from '../composables/usePosts'
+import { useAuthUser } from '../composables/useAuthUser'
 
 export default {
   name: 'PostFeed',
@@ -59,18 +60,38 @@ export default {
       selectedPostId, 
       loadPosts,
       loadMorePosts,
+      loadUserLikedPosts,
       setSelectedPost,
       toggleLike,
       cleanup
     } = usePosts()
     
+    // Lấy thông tin user để truyền vào like function
+    const { user } = useAuthUser()
+    
     // Load posts khi component mount
     onMounted(() => {
-      console.log('PostFeed mounted, posts length:', posts.value.length) // Debug
+      console.log('PostFeed mounted, posts length:', posts.value.length)
       if (posts.value.length === 0) {
         loadPosts(10) // Load 10 posts đầu tiên
       }
     })
+    
+    // Watch user để load liked posts khi user đã sẵn sàng
+    watch(user, async (newUser) => {
+      if (newUser && posts.value.length > 0) {
+        console.log('PostFeed: Loading user liked posts for', newUser.uid)
+        await loadUserLikedPosts(newUser)
+      }
+    }, { immediate: true })
+    
+    // Watch posts để load liked status khi posts đã load
+    watch(posts, async (newPosts) => {
+      if (user.value && newPosts.length > 0) {
+        console.log('PostFeed: Posts loaded, loading liked status')
+        await loadUserLikedPosts(user.value)
+      }
+    }, { immediate: true })
     
     // Cleanup khi component unmount
     onUnmounted(() => {
@@ -79,19 +100,27 @@ export default {
     
     // Xử lý khi post hiển thị trong viewport
     const handlePostVisible = (postId) => {
-      console.log('PostFeed - Post visible:', postId) // Debug
+      console.log('PostFeed - Post visible:', postId)
       setSelectedPost(postId)
     }
     
-    // Xử lý like bài viết
+    // Xử lý like bài viết với user authentication
     const handleLikePost = (postId) => {
-      console.log('PostFeed - Like post:', postId) // Debug
-      toggleLike(postId)
+      if (user.value) {
+        toggleLike(postId, user.value)
+      } else {
+        console.warn('User not logged in')
+      }
     }
     
     // Xử lý load thêm posts
-    const handleLoadMore = () => {
-      loadMorePosts(10)
+    const handleLoadMore = async () => {
+      await loadMorePosts(10)
+      
+      // Load liked status cho posts mới
+      if (user.value) {
+        await loadUserLikedPosts(user.value)
+      }
     }
     
     return {
