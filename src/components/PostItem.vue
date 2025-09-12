@@ -3,11 +3,7 @@ src/components/PostItem.vue - Fixed Media Display
 Component hiển thị một bài viết với media carousel đẹp mắt, fix vấn đề single media và sizing
 -->
 <template>
-  <div 
-    class="post" 
-    :data-post-id="post.id"
-    ref="postElement"
-  >
+  <div class="post" :data-post-id="post.id" ref="postElement">
     <div class="user-info">
       <div class="avatar">
         <img v-if="post.avatar" :src="post.avatar" alt="Avatar" class="avatar-image">
@@ -18,99 +14,60 @@ Component hiển thị một bài viết với media carousel đẹp mắt, fix 
         <p class="timestamp">{{ post.timestamp || '2 hours ago' }}</p>
       </div>
     </div>
-    
+
     <h4 class="post-title">{{ post.title }}</h4>
     <p class="post-content">{{ post.shortContent }}</p>
-    
+
     <!-- Media Display -->
     <div class="media-section" v-if="hasMedia">
       <!-- Single Media Display -->
       <div v-if="mediaItems.length === 1" class="single-media-container">
-        <img 
-          v-if="mediaItems[0].type?.startsWith('image/') || !mediaItems[0].type" 
-          :src="mediaItems[0].url" 
-          :alt="post.title"
-          class="single-media-image"
-          @error="handleMediaError"
-        >
-        <video 
-          v-else-if="mediaItems[0].type?.startsWith('video/')" 
-          :src="mediaItems[0].url" 
-          class="single-media-video"
-          controls
-          preload="metadata"
-          @error="handleMediaError"
-        >
+        <img v-if="mediaItems[0].type?.startsWith('image/') || !mediaItems[0].type" :src="mediaItems[0].url"
+          :alt="post.title" class="single-media-image" @error="handleMediaError">
+        <video v-else-if="mediaItems[0].type?.startsWith('video/')" :src="mediaItems[0].url" class="single-media-video"
+          controls preload="metadata" @error="handleMediaError">
           Your browser does not support video.
         </video>
       </div>
-      
+
       <!-- Multiple Media Carousel -->
       <div v-else class="media-carousel">
-        <div class="media-container">
+        <div class="multi-media-container">
           <div class="media-wrapper" :style="{ transform: `translateX(-${currentMediaIndex * 100}%)` }">
-            <div 
-              v-for="(media, index) in mediaItems" 
-              :key="index"
-              class="media-slide"
-            >
-              <img 
-                v-if="media.type?.startsWith('image/') || !media.type" 
-                :src="media.url" 
-                :alt="`Media ${index + 1}`"
-                class="carousel-media-image"
-                @error="handleMediaError"
-              >
-              <video 
-                v-else-if="media.type?.startsWith('video/')" 
-                :src="media.url" 
-                class="carousel-media-video"
-                controls
-                preload="metadata"
-                @error="handleMediaError"
-              >
+            <div v-for="(media, index) in mediaItems" :key="index" class="media-slide">
+              <img v-if="media.type?.startsWith('image/') || !media.type" :src="media.url" :alt="`Media ${index + 1}`"
+                class="carousel-media-image" @error="handleMediaError">
+              <video v-else-if="media.type?.startsWith('video/')" :src="media.url" class="carousel-media-video" controls
+                preload="metadata" @error="handleMediaError">
                 Your browser does not support video.
               </video>
             </div>
           </div>
-          
+
           <!-- Navigation arrows -->
-          <button 
-            v-if="currentMediaIndex > 0"
-            class="nav-btn nav-prev" 
-            @click="prevMedia"
-            aria-label="Previous media"
-          >
+          <button v-if="currentMediaIndex > 0" class="nav-btn nav-prev" @click="prevMedia" aria-label="Previous media">
             <span class="nav-icon">‹</span>
           </button>
-          <button 
-            v-if="currentMediaIndex < mediaItems.length - 1"
-            class="nav-btn nav-next" 
-            @click="nextMedia"
-            aria-label="Next media"
-          >
+          <button v-if="currentMediaIndex < mediaItems.length - 1" class="nav-btn nav-next" @click="nextMedia"
+            aria-label="Next media">
             <span class="nav-icon">›</span>
           </button>
-          
+
           <!-- Media counter -->
           <div class="media-counter">
             {{ currentMediaIndex + 1 }} / {{ mediaItems.length }}
           </div>
         </div>
-        
+
         <!-- Dots indicator -->
         <div class="media-dots">
-          <button 
-            v-for="(media, index) in mediaItems" 
-            :key="index"
-            :class="['dot', { active: index === currentMediaIndex }]"
-            @click="goToMedia(index)"
-            :aria-label="`Go to media ${index + 1}`"
-          ></button>
+          <button v-for="(media, index) in mediaItems" :key="index"
+            :class="['dot', { active: index === currentMediaIndex }]" @click="goToMedia(index)"
+            :aria-label="`Go to media ${index + 1}`"></button>
         </div>
       </div>
     </div>
-    
+
     <div class="actions">
       <button @click="handleLike">
         <img src="/src/assets/icons/like.png" alt="Like" width="16" height="16">
@@ -136,14 +93,14 @@ export default {
     const postElement = ref(null)
     const currentMediaIndex = ref(0)
     let observer = null
-    
+
     // Computed để xử lý media items với fallback tốt hơn
     const mediaItems = computed(() => {
       // Ưu tiên mediaItems array từ Firestore (posts mới)
       if (props.post.mediaItems && Array.isArray(props.post.mediaItems) && props.post.mediaItems.length > 0) {
         return props.post.mediaItems
       }
-      
+
       // Fallback: tạo array từ image field cũ
       if (props.post.image && props.post.image.trim()) {
         return [{
@@ -152,7 +109,7 @@ export default {
           name: 'legacy-image'
         }]
       }
-      
+
       // Fallback: tạo array từ MediaUrl
       if (props.post.MediaUrl && props.post.MediaUrl.trim()) {
         return [{
@@ -161,14 +118,14 @@ export default {
           name: 'media-url'
         }]
       }
-      
+
       return []
     })
-    
+
     const hasMedia = computed(() => {
       return mediaItems.value && mediaItems.value.length > 0
     })
-    
+
     onMounted(() => {
       // Thiết lập Intersection Observer để theo dõi post hiển thị
       observer = new IntersectionObserver((entries) => {
@@ -182,37 +139,37 @@ export default {
         rootMargin: '-20% 0px -20% 0px', // Post cần hiển thị ít nhất 60% để được detect
         threshold: 0.6
       })
-      
+
       if (postElement.value) {
         observer.observe(postElement.value)
       }
     })
-    
+
     onUnmounted(() => {
       if (observer && postElement.value) {
         observer.unobserve(postElement.value)
       }
     })
-    
+
     // Media navigation functions
     const nextMedia = () => {
       if (currentMediaIndex.value < mediaItems.value.length - 1) {
         currentMediaIndex.value++
       }
     }
-    
+
     const prevMedia = () => {
       if (currentMediaIndex.value > 0) {
         currentMediaIndex.value--
       }
     }
-    
+
     const goToMedia = (index) => {
       if (index >= 0 && index < mediaItems.value.length) {
         currentMediaIndex.value = index
       }
     }
-    
+
     // Xử lý lỗi load media
     const handleMediaError = (event) => {
       console.warn('Media load error:', event.target.src)
@@ -221,12 +178,12 @@ export default {
       fallback.innerHTML = '<span>Không thể tải media</span>'
       event.target.parentElement.replaceChild(fallback, event.target)
     }
-    
+
     // Xử lý like bài viết
     const handleLike = () => {
       emit('like-post', props.post.id)
     }
-    
+
     return {
       postElement,
       currentMediaIndex,
@@ -330,6 +287,7 @@ export default {
   line-height: 1.5;
 }
 
+/*Media Display*/
 .media-section {
   margin: 0.75rem 0;
 }
@@ -339,24 +297,17 @@ export default {
   width: 100%;
   max-height: 500px;
   overflow: hidden;
-  background: #f8fafc;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
-.single-media-image {
-  width: 100%;
-  height: auto;
-  max-height: 500px;
-  object-fit: cover;
-  display: block;
-}
-
+.single-media-image,
 .single-media-video {
   width: 100%;
   height: auto;
   max-height: 500px;
+  object-fit: cover;
   display: block;
 }
 
@@ -365,13 +316,14 @@ export default {
   position: relative;
 }
 
-.media-container {
-  position: relative;
+/* Multi Media Styles */
+.multi-media-container {
   width: 100%;
-  height: 400px;
+  max-height: 500px;
   overflow: hidden;
-  background: #000;
-  border-radius: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .media-wrapper {
@@ -386,18 +338,15 @@ export default {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #000;
 }
 
 .carousel-media-image,
 .carousel-media-video {
-  max-width: 100%;
-  max-height: 100%;
-  object-fit: contain;
-}
-
-.carousel-media-video {
   width: 100%;
+  height: auto;
+  max-height: 500px;
+  object-fit: cover;
+  display: block;
 }
 
 .nav-btn {
@@ -524,24 +473,24 @@ export default {
   .media-container {
     height: 300px;
   }
-  
+
   .single-media-container {
     max-height: 400px;
   }
-  
+
   .nav-btn {
     width: 32px;
     height: 32px;
   }
-  
+
   .nav-icon {
     font-size: 18px;
   }
-  
+
   .nav-prev {
     left: 8px;
   }
-  
+
   .nav-next {
     right: 8px;
   }
