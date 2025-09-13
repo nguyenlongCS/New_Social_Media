@@ -39,13 +39,6 @@ Hiển thị media, số lượt like, trending badge, auto-play video
 
         <!-- Post Info Overlay -->
         <div class="post-info-overlay">
-            <div class="post-stats">
-                <div class="likes-count">
-                    <span class="heart-icon">❤️</span>
-                    <span>{{ formatLikesCount(post.likes) }}</span>
-                </div>
-            </div>
-
             <div class="post-meta">
                 <h3 class="post-title">{{ post.title }}</h3>
                 <div class="author-info">
