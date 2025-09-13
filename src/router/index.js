@@ -1,5 +1,5 @@
 /*
-src/router/index.js - Router với route /discover mới
+src/router/index.js - Router với route /friends mới
 */
 import { createRouter, createWebHistory } from 'vue-router'
 import HomeView from '../views/HomeView.vue'
@@ -7,6 +7,7 @@ import LoginView from '../views/LoginView.vue'
 import ProfileView from '../views/ProfileView.vue'
 import CreatePostView from '../views/CreatePostView.vue'
 import DiscoverView from '../views/DiscoverView.vue'
+import FriendsView from '../views/FriendsView.vue'
 
 const router = createRouter({
   history: createWebHistory('/'),
@@ -37,6 +38,12 @@ const router = createRouter({
       path: '/discover',
       name: 'discover',
       component: DiscoverView,
+      meta: { requiresAuth: true }
+    },
+    {
+      path: '/friends',
+      name: 'friends',
+      component: FriendsView,
       meta: { requiresAuth: true }
     },
     {

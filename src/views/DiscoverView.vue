@@ -39,7 +39,7 @@ Grid bất đối xứng hiển thị trending posts và discover posts, sắp x
         <div v-if="trendingPosts.length > 0" class="trending-section">
           <h2 class="section-title">
             <span class="trending-icon">🔥</span>
-            Trending tuần này
+            Top Trending
           </h2>
           <div class="trending-grid">
             <DiscoverItem 
