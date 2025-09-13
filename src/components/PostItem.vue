@@ -70,10 +70,9 @@ Component hiển thị một bài viết với media carousel - Fixed like icon 
 
     <div class="actions">
       <button @click="handleLike" :disabled="isLiking" :class="{ liked: post.isLiked }">
-        <img :src="post.isLiked ? '/src/assets/icons/liked.png' : '/src/assets/icons/like.png'" 
-             :alt="post.isLiked ? 'Liked' : 'Like'" width="16" height="16">
-        <span v-if="isLiking">Đang xử lý...</span>
-        <span v-else>{{ post.isLiked ? 'Liked' : 'Like' }} ({{ post.likes || 0 }})</span>
+        <img :src="post.isLiked ? '/src/assets/icons/liked.png' : '/src/assets/icons/like.png'"
+          :alt="post.isLiked ? 'Liked' : 'Like'" width="16" height="16">
+        <span>{{ post.isLiked ? 'Liked' : 'Like' }} ({{ post.likes || 0 }})</span>
       </button>
       <button @click="handleComment">
         <img src="/src/assets/icons/comment.png" alt="Comment" width="16" height="16">
@@ -189,7 +188,7 @@ export default {
     // Xử lý like bài viết
     const handleLike = async () => {
       if (isLiking.value) return
-      
+
       isLiking.value = true
       try {
         emit('like-post', props.post.id)
@@ -200,7 +199,7 @@ export default {
         }, 1000)
       }
     }
-    
+
     // Xử lý comment - scroll đến phần comment ở RightSide
     const handleComment = () => {
       emit('post-visible', props.post.id)

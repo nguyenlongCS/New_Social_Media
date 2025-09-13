@@ -1,6 +1,6 @@
 <!--
-src/views/ProfileView.vue - Trang profile người dùng
-Hiển thị và chỉnh sửa thông tin cá nhân, upload avatar với icon camera
+src/views/ProfileView.vue - Complete Version
+Trang profile người dùng với data sync status và progress indicator - Full code
 -->
 <template>
   <div class="profile-view">
@@ -9,7 +9,7 @@ Hiển thị và chỉnh sửa thông tin cá nhân, upload avatar với icon ca
     <div v-if="isAuthLoading" class="loading-overlay" style="top: 3.75rem; height: calc(100vh - 3.75rem);">
       <div class="loading-content">
         <div class="spinner"></div>
-        <p>Đang tải...</p>
+        <p>Đang khởi tạo...</p>
       </div>
     </div>
     
@@ -21,6 +21,31 @@ Hiển thị và chỉnh sửa thông tin cá nhân, upload avatar với icon ca
           <p class="page-subtitle">Quản lý thông tin và tùy chỉnh profile của bạn</p>
         </div>
         
+        <!-- Data Sync Status -->
+        <div v-if="isSyncing || syncStatus || syncError" class="sync-status-section">
+          <div class="sync-status-card">
+            <!-- Syncing progress -->
+            <div v-if="isSyncing" class="sync-progress">
+              <div class="sync-progress-bar">
+                <div class="sync-progress-fill" :style="{ width: syncProgress + '%' }"></div>
+              </div>
+              <p class="sync-status-text">{{ syncStatus }} ({{ syncProgress }}%)</p>
+            </div>
+            
+            <!-- Success status -->
+            <div v-else-if="syncStatus && !syncError" class="sync-success">
+              <div class="sync-icon sync-icon-success">✓</div>
+              <p class="sync-status-text">{{ syncStatus }}</p>
+            </div>
+            
+            <!-- Error status -->
+            <div v-else-if="syncError" class="sync-error">
+              <div class="sync-icon sync-icon-error">⚠</div>
+              <p class="sync-error-text">{{ syncError }}</p>
+            </div>
+          </div>
+        </div>
+        
         <!-- Avatar Section -->
         <div class="avatar-section">
           <div class="avatar-container">
@@ -29,16 +54,23 @@ Hiển thị và chỉnh sửa thông tin cá nhân, upload avatar với icon ca
             <div v-else class="default-avatar">{{ userInitials }}</div>
             
             <!-- Camera icon overlay -->
-            <label for="avatar-upload" class="camera-overlay">
+            <label for="avatar-upload" class="camera-overlay" :class="{ disabled: isUploading || isSyncing }">
               <input 
                 id="avatar-upload" 
                 type="file" 
                 accept="image/*" 
                 @change="handleAvatarSelect"
+                :disabled="isUploading || isSyncing"
                 style="display: none;"
               >
               <img src="/src/assets/icons/camera.png" alt="Camera" class="camera-icon">
             </label>
+            
+            <!-- Upload progress -->
+            <div v-if="isUploading" class="avatar-upload-progress">
+              <div class="spinner-small"></div>
+              <span>Đang upload...</span>
+            </div>
           </div>
         </div>
         
@@ -51,6 +83,7 @@ Hiển thị và chỉnh sửa thông tin cá nhân, upload avatar với icon ca
               type="text" 
               v-model="profileData.UserName"
               placeholder="Nhập tên hiển thị"
+              :disabled="isSaving || isSyncing"
               required
             >
           </div>
@@ -62,12 +95,17 @@ Hiển thị và chỉnh sửa thông tin cá nhân, upload avatar với icon ca
               v-model="profileData.Bio"
               placeholder="Viết vài dòng về bản thân bạn..."
               rows="3"
+              :disabled="isSaving || isSyncing"
             ></textarea>
           </div>
           
           <div class="form-group">
             <label for="gender">Giới tính</label>
-            <select id="gender" v-model="profileData.Gender">
+            <select 
+              id="gender" 
+              v-model="profileData.Gender"
+              :disabled="isSaving || isSyncing"
+            >
               <option value="">Chọn giới tính</option>
               <option value="male">Nam</option>
               <option value="female">Nữ</option>
@@ -87,14 +125,16 @@ Hiển thị và chỉnh sửa thông tin cá nhân, upload avatar với icon ca
           
           <!-- Form actions -->
           <div class="form-actions">
-            <button type="submit" :disabled="isSaving || isUploading" class="save-btn">
-              <span v-if="isSaving || isUploading">Đang lưu...</span>
+            <button 
+              type="submit" 
+              :disabled="isSaving || isUploading || isSyncing" 
+              class="save-btn"
+            >
+              <span v-if="isSaving">Đang lưu...</span>
+              <span v-else-if="isSyncing">Đang đồng bộ...</span>
               <span v-else>Lưu thay đổi</span>
             </button>
             
-            <button type="button" @click="resetForm" class="reset-btn">
-              Khôi phục
-            </button>
           </div>
         </form>
       </div>
@@ -132,11 +172,14 @@ export default {
       successMessage,
       avatarPreview,
       selectedAvatarFile,
+      isSyncing,
+      syncProgress,
+      syncStatus,
+      syncError,
       loadUserProfile,
       saveUserProfile,
       uploadAvatar,
-      selectAvatarFile,
-      resetProfileForm
+      selectAvatarFile
     } = useProfile()
     
     // Tạo initials cho default avatar
@@ -164,7 +207,7 @@ export default {
       }
     }
     
-    // Xử lý lưu profile - bao gồm cả avatar nếu có
+    // Xử lý lưu profile - bao gồm cả avatar nếu có + data sync
     const handleSaveProfile = async () => {
       try {
         // Đợi user được khởi tạo nếu cần
@@ -180,16 +223,11 @@ export default {
           }
         }
         
-        // Sau đó lưu thông tin profile
+        // Sau đó lưu thông tin profile (sẽ tự động sync nếu có thay đổi UserName)
         await saveUserProfile()
       } catch (error) {
         console.error('Error saving profile:', error)
       }
-    }
-    
-    // Reset form về trạng thái ban đầu
-    const resetForm = () => {
-      resetProfileForm()
     }
     
     // Load data khi component mount
@@ -218,10 +256,13 @@ export default {
       successMessage,
       avatarPreview,
       selectedAvatarFile,
+      isSyncing,
+      syncProgress,
+      syncStatus,
+      syncError,
       userInitials,
       handleAvatarSelect,
-      handleSaveProfile,
-      resetForm
+      handleSaveProfile
     }
   }
 }
@@ -263,6 +304,80 @@ export default {
 
 .page-subtitle {
   color: #6b7280;
+  margin: 0;
+}
+
+/* Data Sync Status Styles */
+.sync-status-section {
+  margin-bottom: 2rem;
+}
+
+.sync-status-card {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.5rem;
+  padding: 1rem;
+}
+
+.sync-progress {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.sync-progress-bar {
+  width: 100%;
+  height: 6px;
+  background: #e2e8f0;
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.sync-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #2563eb, #7c3aed);
+  transition: width 0.3s ease;
+}
+
+.sync-status-text {
+  font-size: 0.875rem;
+  color: #475569;
+  margin: 0;
+  text-align: center;
+}
+
+.sync-success,
+.sync-error {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  justify-content: center;
+}
+
+.sync-icon {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: bold;
+  color: white;
+}
+
+.sync-icon-success {
+  background: #16a34a;
+}
+
+.sync-icon-error {
+  background: #dc2626;
+}
+
+.sync-error-text {
+  color: #dc2626;
+  font-size: 0.875rem;
   margin: 0;
 }
 
@@ -321,15 +436,44 @@ export default {
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
 }
 
-.camera-overlay:hover {
+.camera-overlay:hover:not(.disabled) {
   background: #1d4ed8;
   transform: scale(1.1);
+}
+
+.camera-overlay.disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 .camera-icon {
   width: 20px;
   height: 20px;
   filter: brightness(0) invert(1);
+}
+
+.avatar-upload-progress {
+  position: absolute;
+  bottom: -30px;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.75rem;
+  color: #2563eb;
+}
+
+.spinner-small {
+  width: 16px;
+  height: 16px;
+  border: 2px solid #e5e7eb;
+  border-top: 2px solid #2563eb;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }
 
 .profile-form {
@@ -366,6 +510,14 @@ export default {
   outline: none;
   border-color: #2563eb;
   box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+.form-group input:disabled,
+.form-group textarea:disabled,
+.form-group select:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  background: #f9fafb;
 }
 
 .error-message {
@@ -415,25 +567,13 @@ export default {
   cursor: not-allowed;
 }
 
-.reset-btn {
-  padding: 0.75rem 1.5rem;
-  background: #f1f5f9;
-  color: #374151;
-  border: 1px solid #d1d5db;
-  border-radius: 0.5rem;
-  font-size: 0.875rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: background 0.2s ease;
-}
-
-.reset-btn:hover {
-  background: #e2e8f0;
-}
-
 @media (max-width: 768px) {
   .form-actions {
     flex-direction: column;
+  }
+  
+  .sync-status-card {
+    padding: 0.75rem;
   }
 }
 </style>

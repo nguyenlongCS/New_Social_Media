@@ -1,6 +1,6 @@
 <!--
-src/components/Header.vue - Fixed Version
-Header với navigation và logout functionality sử dụng useAuthUser - Icons PNG
+src/components/Header.vue - Updated Version
+Header với navigation và avatar sync - Profile-pic tự động cập nhật khi thay đổi avatar
 -->
 <template>
   <header class="top-bar">
@@ -40,31 +40,92 @@ Header với navigation và logout functionality sử dụng useAuthUser - Icons
         <span v-else>Logout</span>
       </button>
       
-      <div class="profile-pic" :title="user?.email || 'User'">
-        <img v-if="user?.photoURL" :src="user.photoURL" alt="Avatar" class="user-avatar">
+      <!-- Profile Picture with Real-time Avatar Update -->
+      <div class="profile-pic" :title="profileTooltip" @click="navigateTo('/profile')">
+        <!-- Show current avatar from Firestore or auth provider -->
+        <img 
+          v-if="currentAvatar" 
+          :src="currentAvatar" 
+          alt="Avatar" 
+          class="user-avatar"
+          @error="handleAvatarError"
+        >
+        <!-- Default avatar with user initials -->
         <div v-else class="default-avatar">{{ userInitials }}</div>
+        
+        <!-- Loading indicator when avatar is updating -->
+        <div v-if="isAvatarUpdating" class="avatar-updating-overlay">
+          <div class="spinner-tiny"></div>
+        </div>
       </div>
     </div>
   </header>
 </template>
 
 <script>
-import { ref, computed } from 'vue'
+import { ref, computed, watch, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthUser } from '../composables/useAuthUser'
 import { useAuth } from '../composables/useAuth'
+import { doc, onSnapshot } from 'firebase/firestore'
+import { db } from '../firebase/config'
 
 export default {
   name: 'Header',
   setup() {
     const router = useRouter()
     const searchQuery = ref('')
+    const isAvatarUpdating = ref(false)
+    const firestoreAvatar = ref('')
+    let unsubscribeProfile = null
     
     // Sử dụng useAuthUser cho user state
-    const { user, isLoggedIn } = useAuthUser()
+    const { user, isLoggedIn, userId } = useAuthUser()
     
     // Sử dụng useAuth chỉ cho logout function
     const { logout, isLoading, cleanup } = useAuth()
+    
+    // Watch for avatar updates in real-time từ Firestore
+    watch(userId, (newUserId, oldUserId) => {
+      // Cleanup previous listener
+      if (unsubscribeProfile) {
+        unsubscribeProfile()
+        unsubscribeProfile = null
+      }
+      
+      if (newUserId) {
+        console.log('Header: Setting up avatar listener for user:', newUserId)
+        
+        // Listen to user profile changes in Firestore
+        const userRef = doc(db, 'users', newUserId)
+        unsubscribeProfile = onSnapshot(userRef, (doc) => {
+          if (doc.exists()) {
+            const userData = doc.data()
+            console.log('Header: User profile updated:', userData.Avatar)
+            firestoreAvatar.value = userData.Avatar || ''
+          }
+        }, (error) => {
+          console.error('Header: Error listening to profile updates:', error)
+        })
+      } else {
+        firestoreAvatar.value = ''
+      }
+    }, { immediate: true })
+    
+    // Computed current avatar - priority: Firestore > Auth Provider
+    const currentAvatar = computed(() => {
+      // Ưu tiên avatar từ Firestore (có thể được cập nhật)
+      if (firestoreAvatar.value) {
+        return firestoreAvatar.value
+      }
+      
+      // Fallback: avatar từ auth provider (Google, Facebook)
+      if (user.value?.photoURL) {
+        return user.value.photoURL
+      }
+      
+      return ''
+    })
     
     // Tạo initials cho default avatar
     const userInitials = computed(() => {
@@ -82,9 +143,46 @@ export default {
       return 'U'
     })
     
+    // Profile tooltip text
+    const profileTooltip = computed(() => {
+      if (user.value?.displayName) {
+        return user.value.displayName
+      }
+      if (user.value?.email) {
+        return user.value.email
+      }
+      return 'Profile'
+    })
+    
+    // Watch avatar changes to show updating indicator
+    watch(currentAvatar, (newAvatar, oldAvatar) => {
+      if (oldAvatar && newAvatar && oldAvatar !== newAvatar) {
+        console.log('Header: Avatar changed from', oldAvatar, 'to', newAvatar)
+        
+        // Show updating indicator briefly
+        isAvatarUpdating.value = true
+        setTimeout(() => {
+          isAvatarUpdating.value = false
+        }, 1000)
+      }
+    })
+    
+    // Handle avatar load error
+    const handleAvatarError = (event) => {
+      console.warn('Header: Avatar load error:', event.target.src)
+      // Hide broken image by setting src to empty
+      event.target.style.display = 'none'
+    }
+    
     // Xử lý logout
     const handleLogout = async () => {
       try {
+        // Cleanup profile listener before logout
+        if (unsubscribeProfile) {
+          unsubscribeProfile()
+          unsubscribeProfile = null
+        }
+        
         await logout()
         cleanup()
         await router.push('/login')
@@ -100,15 +198,210 @@ export default {
       }
     }
     
+    // Cleanup when component unmounts
+    onMounted(() => {
+      return () => {
+        if (unsubscribeProfile) {
+          unsubscribeProfile()
+        }
+      }
+    })
+    
     return {
       user,
       isLoggedIn,
       isLoading,
       searchQuery,
+      currentAvatar,
       userInitials,
+      profileTooltip,
+      isAvatarUpdating,
+      handleAvatarError,
       handleLogout,
       navigateTo
     }
   }
 }
 </script>
+
+<style scoped>
+/* Existing styles remain the same */
+.top-bar {
+  background: linear-gradient(90deg, #2563eb, #7c3aed);
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 3.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 1.25rem;
+  color: white;
+  z-index: 1000;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.logo {
+  font-size: 1.375rem;
+  font-weight: 700;
+  color: white;
+}
+
+nav {
+  display: flex;
+  gap: 1rem;
+}
+
+.nav-icon {
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.1);
+  transition: background-color 0.2s ease, transform 0.2s ease;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.nav-icon:hover {
+  background-color: rgba(255, 255, 255, 0.3);
+  transform: scale(1.1);
+}
+
+.nav-icon img {
+  width: 20px;
+  height: 20px;
+  filter: brightness(0) invert(1);
+}
+
+.search-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.search-bar input {
+  padding: 0.375rem 0.875rem;
+  border-radius: 1.25rem;
+  background: white;
+  color: #1e293b;
+  border: none;
+  outline: none;
+  font-size: 0.8125rem;
+  width: 12.5rem;
+}
+
+.logout-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.35rem 0.75rem;
+  border: none;
+  border-radius: 1rem;
+  background: rgba(255, 255, 255, 0.15);
+  color: white;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.logout-btn:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.3);
+  transform: scale(1.05);
+}
+
+.logout-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.logout-btn img {
+  width: 16px;
+  height: 16px;
+  filter: brightness(0) invert(1);
+}
+
+/* Enhanced Profile Picture Styles */
+.profile-pic {
+  position: relative;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  overflow: hidden;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+}
+
+.profile-pic:hover {
+  background: rgba(255, 255, 255, 0.3);
+  transform: scale(1.1);
+  border-color: rgba(255, 255, 255, 0.5);
+}
+
+.user-avatar {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+  transition: opacity 0.2s ease;
+}
+
+.default-avatar {
+  color: white;
+  font-weight: 600;
+  font-size: 0.875rem;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.1));
+}
+
+/* Avatar updating overlay */
+.avatar-updating-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+}
+
+.spinner-tiny {
+  width: 12px;
+  height: 12px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top: 2px solid white;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Avatar load animation */
+.user-avatar {
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+</style>
