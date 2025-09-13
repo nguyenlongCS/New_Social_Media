@@ -1,6 +1,6 @@
 <!--
 src/components/LeftSide.vue - Refactored
-Sidebar bên trái với menu navigation, loại bỏ friends list
+Sidebar bên trái với menu navigation, thêm discover navigation
 -->
 <template>
   <aside class="left-menu">
@@ -38,8 +38,9 @@ export default {
       router.push('/create-post')
     }
     
+    // Xử lý khám phá - chuyển đến trang discover
     const handleDiscover = () => {
-      // Logic khám phá sẽ được thêm sau
+      router.push('/discover')
     }
     
     const handleAdmin = () => {
