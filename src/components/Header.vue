@@ -235,22 +235,26 @@ export default {
   height: 3.75rem;
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: space-between; /* Giữ logo bên trái, search/avatar bên phải */
   padding: 0 1.25rem;
   color: white;
   z-index: 1000;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
 }
 
+nav {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 1rem;
+}
+
+
 .logo {
   font-size: 1.375rem;
   font-weight: 700;
   color: white;
-}
-
-nav {
-  display: flex;
-  gap: 1rem;
 }
 
 .nav-icon {

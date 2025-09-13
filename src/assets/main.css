@@ -70,7 +70,7 @@ body {
 
 .top-bar nav {
     display: flex;
-    gap: 1rem;
+    gap: 2rem;
 }
 
 .nav-icon {
