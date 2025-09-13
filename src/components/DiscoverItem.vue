@@ -30,11 +30,6 @@ Hiển thị media, số lượt like, trending badge, auto-play video
             <div v-else class="no-media">
                 <span>No Media</span>
             </div>
-
-            <!-- Video indicator -->
-            <div v-if="isVideoPost" class="video-indicator">
-                <span class="play-icon">▶</span>
-            </div>
         </div>
 
         <!-- Post Info Overlay -->
@@ -254,27 +249,6 @@ export default {
     justify-content: center;
     color: #9ca3af;
     font-size: 0.875rem;
-}
-
-.video-indicator {
-    position: absolute;
-    bottom: 0.75rem;
-    right: 0.75rem;
-    background: rgba(0, 0, 0, 0.7);
-    color: white;
-    width: 2rem;
-    height: 2rem;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 2;
-}
-
-.play-icon {
-    font-size: 0.75rem;
-    margin-left: 2px;
-    /* Căn giữa icon play */
 }
 
 .post-info-overlay {
