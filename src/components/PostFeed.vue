@@ -34,7 +34,7 @@ Component hiển thị danh sách bài viết với real-time data từ Firestor
         class="load-more-btn"
       >
         <span v-if="isLoading">Đang tải...</span>
-        <span v-else">Tải thêm bài viết</span>
+        <span v-else>Tải thêm bài viết</span>
       </button>
     </div>
   </main>

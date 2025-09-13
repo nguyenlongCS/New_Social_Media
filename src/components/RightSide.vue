@@ -74,7 +74,7 @@ Sidebar bên phải hiển thị chi tiết bài viết - Fix load comments bằ
           :disabled="!commentText.trim() || isAddingComment"
         >
           <span v-if="isAddingComment">Đang gửi...</span>
-          <span v-else">Gửi</span>
+          <span v-else>Gửi</span>
         </button>
       </div>
     </div>
