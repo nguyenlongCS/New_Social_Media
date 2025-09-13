@@ -1,5 +1,6 @@
 /*
-src/router/index.js - Router với route /friends mới
+src/router/index.js - Router với route /news mới
+Thêm route /news để hiển thị trang tin tức
 */
 import { createRouter, createWebHistory } from 'vue-router'
 import HomeView from '../views/HomeView.vue'
@@ -8,6 +9,7 @@ import ProfileView from '../views/ProfileView.vue'
 import CreatePostView from '../views/CreatePostView.vue'
 import DiscoverView from '../views/DiscoverView.vue'
 import FriendsView from '../views/FriendsView.vue'
+import NewsView from '../views/NewsView.vue'
 
 const router = createRouter({
   history: createWebHistory('/'),
@@ -44,6 +46,12 @@ const router = createRouter({
       path: '/friends',
       name: 'friends',
       component: FriendsView,
+      meta: { requiresAuth: true }
+    },
+    {
+      path: '/news',
+      name: 'news',
+      component: NewsView,
       meta: { requiresAuth: true }
     },
     {
