@@ -1,5 +1,5 @@
 <!--
-src/components/FriendsMain.vue - Component trung tâm quản lý nội dung friends
+src/components/FriendsMain.vue - Component trung tâm quản lý nội dung friends - Updated with NearbyUsers
 Hiển thị 4 tab: Danh sách bạn, Gợi ý bạn bè, Lời mời kết bạn, Tìm bạn xung quanh
 -->
 <template>
@@ -35,7 +35,6 @@ Hiển thị 4 tab: Danh sách bạn, Gợi ý bạn bè, Lời mời kết bạ
             </div>
             <div class="friend-card-info">
               <h3 class="friend-card-name">{{ friend.userName }}</h3>
-              <p class="friend-card-email">{{ friend.email }}</p>
               <p v-if="friend.bio" class="friend-card-bio">{{ friend.bio }}</p>
             </div>
             <div class="friend-card-actions">
@@ -80,7 +79,6 @@ Hiển thị 4 tab: Danh sách bạn, Gợi ý bạn bè, Lời mời kết bạ
             </div>
             <div class="suggestion-card-info">
               <h3 class="suggestion-card-name">{{ user.userName }}</h3>
-              <p class="suggestion-card-email">{{ user.email }}</p>
               <p v-if="user.bio" class="suggestion-card-bio">{{ user.bio }}</p>
             </div>
             <div class="suggestion-card-actions">
@@ -125,7 +123,6 @@ Hiển thị 4 tab: Danh sách bạn, Gợi ý bạn bè, Lời mời kết bạ
             </div>
             <div class="request-card-info">
               <h3 class="request-card-name">{{ request.userName }}</h3>
-              <p class="request-card-email">{{ request.email }}</p>
               <p class="request-card-time">{{ request.createdAt }}</p>
             </div>
             <div class="request-card-actions">
@@ -150,15 +147,7 @@ Hiển thị 4 tab: Danh sách bạn, Gợi ý bạn bè, Lời mời kết bạ
       
       <!-- Tìm bạn xung quanh -->
       <div v-else-if="activeTab === 'nearby'" class="nearby-tab">
-        <div class="tab-header">
-          <h2>Tìm bạn xung quanh</h2>
-          <p>Tính năng đang phát triển</p>
-        </div>
-        
-        <div class="coming-soon">
-          <h3>Sắp ra mắt</h3>
-          <p>Tính năng tìm bạn xung quanh sẽ được phát triển trong phiên bản tiếp theo.</p>
-        </div>
+        <NearbyUsers @send-friend-request="$emit('send-request', $event)" />
       </div>
     </div>
     
@@ -170,8 +159,13 @@ Hiển thị 4 tab: Danh sách bạn, Gợi ý bạn bè, Lời mời kết bạ
 </template>
 
 <script>
+import NearbyUsers from './NearbyUsers.vue'
+
 export default {
   name: 'FriendsMain',
+  components: {
+    NearbyUsers
+  },
   props: {
     activeTab: {
       type: String,
@@ -241,8 +235,7 @@ export default {
 
 /* Loading and Empty States */
 .loading-state,
-.empty-state,
-.coming-soon {
+.empty-state {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -267,14 +260,12 @@ export default {
 }
 
 .loading-state p,
-.empty-state p,
-.coming-soon p {
+.empty-state p {
   color: #6b7280;
   margin: 0;
 }
 
-.empty-state h3,
-.coming-soon h3 {
+.empty-state h3 {
   color: #374151;
   margin: 0 0 0.5rem 0;
 }
@@ -340,14 +331,6 @@ export default {
   font-size: 1rem;
   font-weight: 600;
   color: #1e293b;
-  margin-bottom: 0.5rem;
-}
-
-.friend-card-email,
-.suggestion-card-email,
-.request-card-email {
-  font-size: 0.875rem;
-  color: #6b7280;
   margin-bottom: 0.5rem;
 }
 

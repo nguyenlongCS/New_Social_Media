@@ -50,11 +50,7 @@ Sidebar bên trái với menu navigation và danh sách bạn bè - Tự động
       
       <!-- Empty State -->
       <div v-else-if="friendsList.length === 0" class="friends-empty">
-        <div class="empty-icon">👥</div>
         <p class="empty-text">Chưa có bạn bè nào</p>
-        <button @click="navigateToFriends" class="find-friends-button">
-          Tìm bạn bè
-        </button>
       </div>
       
       <!-- Friends List -->
@@ -427,32 +423,10 @@ export default {
   text-align: center;
 }
 
-.empty-icon {
-  font-size: 2rem;
-  margin-bottom: 0.5rem;
-  opacity: 0.5;
-}
-
 .empty-text {
   font-size: 0.8125rem;
   color: #6b7280;
   margin: 0 0 1rem 0;
-}
-
-.find-friends-button {
-  padding: 0.5rem 0.75rem;
-  background: #2563eb;
-  color: white;
-  border: none;
-  border-radius: 0.375rem;
-  font-size: 0.75rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: background 0.2s ease;
-}
-
-.find-friends-button:hover {
-  background: #1d4ed8;
 }
 
 /* Friends List */

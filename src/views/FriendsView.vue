@@ -1,6 +1,7 @@
 <!--
-src/views/FriendsView.vue - Trang quản lý bạn bè sử dụng LeftSide có sẵn và FriendsMain
+src/views/FriendsView.vue - Trang quản lý bạn bè sử dụng LeftSide có sẵn và FriendsMain - Updated with NearbyUsers
 Sử dụng LeftSide component có sẵn, thêm FriendsMain component trung tâm để tránh tràn nội dung
+Tích hợp chức năng tìm bạn xung quanh với Mapbox
 -->
 <template>
   <div class="friends-view">
@@ -109,7 +110,7 @@ export default {
             await getFriendRequests(currentUser.uid)
             break
           case 'nearby':
-            // Tính năng tương lai
+            // Tính năng location được xử lý trong NearbyUsers component
             break
         }
       } catch (error) {
@@ -117,7 +118,7 @@ export default {
       }
     }
     
-    // Gửi lời mời kết bạn
+    // Gửi lời mời kết bạn - xử lý cho cả suggestions và nearby users
     const handleSendRequest = async (targetUser) => {
       if (isProcessing.value) return
       
@@ -131,8 +132,10 @@ export default {
         
         await sendFriendRequest(currentUser.uid, targetUser.userId)
         
-        // Xóa user khỏi danh sách gợi ý
-        usersList.value = usersList.value.filter(u => u.userId !== targetUser.userId)
+        // Xóa user khỏi danh sách gợi ý nếu đang ở tab suggestions
+        if (activeTab.value === 'suggestions') {
+          usersList.value = usersList.value.filter(u => u.userId !== targetUser.userId)
+        }
         
         alert('Đã gửi lời mời kết bạn!')
         
