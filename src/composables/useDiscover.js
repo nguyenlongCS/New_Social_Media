@@ -92,7 +92,7 @@ export function useDiscover() {
 
       // Sort theo likes giảm dần và lấy top 5
       posts.sort((a, b) => b.likes - a.likes)
-      trendingPosts.value = posts.slice(0, 5)
+      trendingPosts.value = posts.slice(0, 3)
 
       console.log('useDiscover: Loaded trending posts:', trendingPosts.value.length)
 
