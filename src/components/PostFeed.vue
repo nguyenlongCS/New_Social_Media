@@ -25,18 +25,6 @@ Component hiển thị danh sách bài viết với real-time data từ Firestor
       <h3>Chưa có bài viết nào</h3>
       <p>Hãy là người đầu tiên chia sẻ khoảnh khắc của bạn!</p>
     </div>
-    
-    <!-- Load more button -->
-    <div v-if="hasMore && posts.length > 0" class="load-more-container">
-      <button 
-        @click="handleLoadMore" 
-        :disabled="isLoading"
-        class="load-more-btn"
-      >
-        <span v-if="isLoading">Đang tải...</span>
-        <span v-else>Tải thêm bài viết</span>
-      </button>
-    </div>
   </main>
 </template>
 
@@ -171,32 +159,5 @@ export default {
 .empty-posts h3 {
   color: #374151;
   margin: 0 0 0.5rem 0;
-}
-
-.load-more-container {
-  display: flex;
-  justify-content: center;
-  padding: 2rem 1rem;
-}
-
-.load-more-btn {
-  padding: 0.75rem 1.5rem;
-  background: #f1f5f9;
-  color: #374151;
-  border: 1px solid #d1d5db;
-  border-radius: 0.5rem;
-  font-size: 0.875rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: background 0.2s ease;
-}
-
-.load-more-btn:hover:not(:disabled) {
-  background: #e2e8f0;
-}
-
-.load-more-btn:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
 }
 </style>

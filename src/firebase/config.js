@@ -31,7 +31,7 @@ export const auth = getAuth(app)
 export const db = getFirestore(app, 'social-media-web-database')
 
 // Khởi tạo Storage với bucket tùy chỉnh cho social-media-web
-export const storage = getStorage(app, 'gs://social-media-web')
+export const storage = getStorage(app, 'gs://social-media-web-storage')
 
 export const rtdb = getDatabase(app)
 
