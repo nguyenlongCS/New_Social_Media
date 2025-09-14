@@ -1,6 +1,7 @@
 <!--
-src/components/LeftSide.vue - Component hoàn toàn mới
-Sidebar bên trái với menu navigation và danh sách bạn bè - Tự động load và quản lý state
+src/components/LeftSide.vue - Updated Version với button Admin
+Thêm button Admin vào navigation menu, chỉ hiển thị khi user có role admin
+Kiểm tra quyền admin và hiển thị button tương ứng
 -->
 <template>
   <aside class="left-menu">
@@ -14,7 +15,8 @@ Sidebar bên trái với menu navigation và danh sách bạn bè - Tự động
         <img src="/src/assets/icons/discover.png" alt="Discover" width="18" height="18">
         <span>Discover</span>
       </button>
-      <button @click="handleAdmin" class="nav-button">
+      <!-- Admin button - chỉ hiển thị khi user có quyền admin -->
+      <button v-if="isAdmin" @click="handleAdmin" class="nav-button admin-button">
         <img src="/src/assets/icons/admin.png" alt="Admin" width="18" height="18">
         <span>Admin</span>
       </button>
@@ -129,6 +131,7 @@ export default {
     const isLoadingFriends = ref(false)
     const showAllFriends = ref(false)
     const errorMessage = ref('')
+    const isAdmin = ref(false)
     
     // Composables
     const { user, isLoggedIn, waitForUserWithTimeout } = useAuthUser()
@@ -139,6 +142,33 @@ export default {
       const limit = showAllFriends.value ? friendsList.value.length : FRIENDS_DISPLAY_LIMIT
       return friendsList.value.slice(0, limit)
     })
+    
+    // Kiểm tra quyền admin của user hiện tại
+    const checkAdminRole = async (userId) => {
+      if (!userId) return false
+      
+      try {
+        const { collection, query, where, getDocs } = await import('firebase/firestore')
+        const { db } = await import('@/firebase/config')
+        
+        const usersQuery = query(
+          collection(db, 'users'),
+          where('UserID', '==', userId)
+        )
+        
+        const snapshot = await getDocs(usersQuery)
+        
+        if (!snapshot.empty) {
+          const userData = snapshot.docs[0].data()
+          return userData.Role === 'admin'
+        }
+        
+        return false
+      } catch (error) {
+        console.error('Error checking admin role:', error)
+        return false
+      }
+    }
     
     // Methods
     const getInitials = (name) => {
@@ -197,8 +227,8 @@ export default {
     }
     
     const handleAdmin = () => {
-      // TODO: Implement admin navigation
-      console.log('Admin clicked')
+      // Điều hướng đến trang admin
+      router.push('/admin')
     }
     
     const handleSetting = () => {
@@ -217,8 +247,16 @@ export default {
     
     // Watchers
     watch(user, async (newUser) => {
-      if (newUser?.uid && friendsList.value.length === 0) {
-        await loadFriends()
+      if (newUser?.uid) {
+        // Kiểm tra quyền admin
+        isAdmin.value = await checkAdminRole(newUser.uid)
+        
+        // Load friends nếu chưa có
+        if (friendsList.value.length === 0) {
+          await loadFriends()
+        }
+      } else {
+        isAdmin.value = false
       }
     }, { immediate: true })
     
@@ -236,6 +274,7 @@ export default {
       } else if (!loggedIn) {
         friendsList.value = []
         errorMessage.value = ''
+        isAdmin.value = false
       }
     })
     
@@ -258,6 +297,7 @@ export default {
       isLoadingFriends,
       showAllFriends,
       errorMessage,
+      isAdmin,
       FRIENDS_DISPLAY_LIMIT,
       
       // Methods
@@ -321,6 +361,22 @@ export default {
 
 .nav-button:active {
   transform: translateY(0);
+}
+
+/* Admin button styling */
+.admin-button {
+  background: linear-gradient(90deg, #dc2626, #ef4444);
+  color: white;
+  font-weight: 500;
+}
+
+.admin-button:hover {
+  background: linear-gradient(90deg, #b91c1c, #dc2626);
+  transform: translateY(-1px);
+}
+
+.admin-button img {
+  filter: brightness(0) invert(1);
 }
 
 /* Divider */

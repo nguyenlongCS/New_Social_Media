@@ -1,6 +1,6 @@
 /*
-src/router/index.js - Router với route /messages mới
-Thêm route /messages để hiển thị trang tin nhắn
+src/router/index.js - Router với route /admin mới và guard kiểm tra quyền admin
+Thêm route /admin với meta requiresAdmin để kiểm tra quyền truy cập
 */
 import { createRouter, createWebHistory } from 'vue-router'
 import HomeView from '../views/HomeView.vue'
@@ -11,6 +11,7 @@ import DiscoverView from '../views/DiscoverView.vue'
 import FriendsView from '../views/FriendsView.vue'
 import NewsView from '../views/NewsView.vue'
 import MessagesView from '../views/MessagesView.vue'
+import AdminView from '../views/AdminView.vue'
 
 const router = createRouter({
   history: createWebHistory('/'),
@@ -62,6 +63,12 @@ const router = createRouter({
       meta: { requiresAuth: true }
     },
     {
+      path: '/admin',
+      name: 'admin',
+      component: AdminView,
+      meta: { requiresAuth: true, requiresAdmin: true }
+    },
+    {
       path: '/login',
       name: 'login',
       component: LoginView,
@@ -73,6 +80,31 @@ const router = createRouter({
     }
   ]
 })
+
+// Helper function để kiểm tra quyền admin
+const checkAdminPermission = async (userId) => {
+  try {
+    const { collection, query, where, getDocs } = await import('firebase/firestore')
+    const { db } = await import('@/firebase/config')
+    
+    const usersQuery = query(
+      collection(db, 'users'),
+      where('UserID', '==', userId)
+    )
+    
+    const snapshot = await getDocs(usersQuery)
+    
+    if (!snapshot.empty) {
+      const userData = snapshot.docs[0].data()
+      return userData.Role === 'admin'
+    }
+    
+    return false
+  } catch (error) {
+    console.error('Error checking admin permission:', error)
+    return false
+  }
+}
 
 router.beforeEach(async (to, from, next) => {
   const { onAuthStateChanged } = await import('firebase/auth')
@@ -90,6 +122,7 @@ router.beforeEach(async (to, from, next) => {
   try {
     const user = await checkAuthState()
     
+    // Kiểm tra auth cơ bản
     if (to.meta.requiresAuth && !user) {
       next('/login')
       return
@@ -98,6 +131,17 @@ router.beforeEach(async (to, from, next) => {
     if (to.meta.requiresGuest && user) {
       next('/home')
       return
+    }
+    
+    // Kiểm tra quyền admin cho route /admin
+    if (to.meta.requiresAdmin && user) {
+      const isAdmin = await checkAdminPermission(user.uid)
+      
+      if (!isAdmin) {
+        // Redirect về home nếu không có quyền admin
+        next('/home')
+        return
+      }
     }
     
     next()
