@@ -63,7 +63,7 @@ Trang profile người dùng với data sync status và progress indicator - Ful
                 :disabled="isUploading || isSyncing"
                 style="display: none;"
               >
-              <img src="/src/assets/icons/camera.png" alt="Camera" class="camera-icon">
+              <img src="@/assets/icons/camera.png" alt="Camera" class="camera-icon">
             </label>
             
             <!-- Upload progress -->

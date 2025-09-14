@@ -10,7 +10,7 @@ Hiển thị danh sách cuộc hội thoại và tìm kiếm người dùng đ�
       
       <div class="search-container">
         <div class="search-input-wrapper">
-          <img src="/src/assets/icons/search.png" alt="Search" class="search-icon">
+          <img src="@/assets/icons/search.png" alt="Search" class="search-icon">
           <input 
             type="text" 
             placeholder="Tìm kiếm người dùng..."
@@ -23,7 +23,7 @@ Hiển thị danh sách cuộc hội thoại và tìm kiếm người dùng đ�
             @click="clearSearch"
             class="clear-search-btn"
           >
-            <img src="/src/assets/icons/delete.png" alt="Clear" width="12" height="12">
+            <img src="@/assets/icons/delete.png" alt="Clear" width="12" height="12">
           </button>
         </div>
       </div>
@@ -67,7 +67,7 @@ Hiển thị danh sách cuộc hội thoại và tìm kiếm người dùng đ�
           </div>
           
           <div class="chat-action">
-            <img src="/src/assets/icons/mess.png" alt="Chat" width="20" height="20">
+            <img src="@/assets/icons/mess.png" alt="Chat" width="20" height="20">
           </div>
         </div>
       </div>
@@ -84,7 +84,7 @@ Hiển thị danh sách cuộc hội thoại và tìm kiếm người dùng đ�
       
       <div v-else-if="conversations.length === 0" class="no-conversations">
         <div class="no-conversations-icon">
-          <img src="/src/assets/icons/mess.png" alt="Messages" width="48" height="48">
+          <img src="@/assets/icons/mess.png" alt="Messages" width="48" height="48">
         </div>
         <p>Chưa có cuộc hội thoại nào</p>
         <p class="no-conversations-hint">Tìm kiếm người dùng để bắt đầu trò chuyện</p>
@@ -121,11 +121,11 @@ Hiển thị danh sách cuộc hội thoại và tìm kiếm người dùng đ�
             
             <div class="last-message">
               <span v-if="conversation.lastMessageType === 'image'" class="media-message">
-                <img src="/src/assets/icons/camera.png" alt="Image" width="12" height="12">
+                <img src="@/assets/icons/camera.png" alt="Image" width="12" height="12">
                 Hình ảnh
               </span>
               <span v-else-if="conversation.lastMessageType === 'video'" class="media-message">
-                <img src="/src/assets/icons/video.png" alt="Video" width="12" height="12">
+                <img src="@/assets/icons/video.png" alt="Video" width="12" height="12">
                 Video
               </span>
               <span v-else>{{ conversation.lastMessage || 'Chưa có tin nhắn' }}</span>

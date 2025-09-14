@@ -14,7 +14,7 @@ Click để mở bài báo ngoài
         @error="handleImageError"
       >
       <div v-else class="news-image-placeholder">
-        <img src="/src/assets/icons/news.png" alt="News" class="placeholder-icon">
+        <img src="@/assets/icons/news.png" alt="News" class="placeholder-icon">
       </div>
     </div>
 
@@ -27,7 +27,7 @@ Click để mở bài báo ngoài
 
       <div class="news-footer">
         <button class="read-more-btn">
-          <img src="/src/assets/icons/discover.png" alt="Read" class="btn-icon">
+          <img src="@/assets/icons/discover.png" alt="Read" class="btn-icon">
           <span>Đọc bài viết</span>
         </button>
       </div>
@@ -60,7 +60,7 @@ export default {
       } else {
         const newPlaceholder = document.createElement('div')
         newPlaceholder.className = 'news-image-placeholder'
-        newPlaceholder.innerHTML = '<img src="/src/assets/icons/news.png" alt="News" class="placeholder-icon">'
+        newPlaceholder.innerHTML = '<img src="@/assets/icons/news.png" alt="News" class="placeholder-icon">'
         newPlaceholder.style.display = 'flex'
         container.appendChild(newPlaceholder)
       }

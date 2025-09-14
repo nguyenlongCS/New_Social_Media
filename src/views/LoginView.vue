@@ -60,12 +60,12 @@ Trang đăng nhập/đăng ký với error handling đơn giản
 
           <div class="social-buttons">
             <button type="button" class="social-btn facebook-btn" @click="handleFacebookLogin" :disabled="isLoading">
-              <img src="/src/assets/icons/facebook.png" alt="Facebook" width="20" height="20">
+              <img src="@/assets/icons/facebook.png" alt="Facebook" width="20" height="20">
               <span>Đăng nhập với Facebook</span>
             </button>
 
             <button type="button" class="social-btn google-btn" @click="handleGoogleLogin" :disabled="isLoading">
-              <img src="/src/assets/icons/google.png" alt="Google" width="20" height="20">
+              <img src="@/assets/icons/google.png" alt="Google" width="20" height="20">
               <span>Đăng nhập với Google</span>
             </button>
           </div>
@@ -110,12 +110,12 @@ Trang đăng nhập/đăng ký với error handling đơn giản
 
           <div class="social-buttons">
             <button type="button" class="social-btn facebook-btn" @click="handleFacebookLogin" :disabled="isLoading">
-              <img src="/src/assets/icons/facebook.png" alt="Facebook" width="20" height="20">
+              <img src="@/assets/icons/facebook.png" alt="Facebook" width="20" height="20">
               <span>Đăng ký với Facebook</span>
             </button>
 
             <button type="button" class="social-btn google-btn" @click="handleGoogleLogin" :disabled="isLoading">
-              <img src="/src/assets/icons/google.png" alt="Google" width="20" height="20">
+              <img src="@/assets/icons/google.png" alt="Google" width="20" height="20">
               <span>Đăng ký với Google</span>
             </button>
           </div>

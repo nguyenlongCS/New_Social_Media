@@ -342,10 +342,10 @@ export function useLocation() {
         .setPopup(
           new window.mapboxgl.Popup({ offset: 25 }).setHTML(`
             <div style="text-align: center; min-width: 150px;">
-              <img src="${user.avatar || '/src/assets/icons/profile.png'}" 
+              <img src="${user.avatar || '@/assets/icons/profile.png'}" 
                    alt="${user.userName}" 
                    style="width: 50px; height: 50px; border-radius: 50%; margin-bottom: 8px; object-fit: cover;"
-                   onerror="this.src='/src/assets/icons/profile.png'">
+                   onerror="this.src='@/assets/icons/profile.png'">
               <div><strong>${user.userName}</strong></div>
               <div style="color: #666; font-size: 12px; margin: 4px 0;">${user.distanceText}</div>
               ${user.bio ? `<div style="color: #666; font-size: 11px; margin-top: 4px; max-width: 140px; word-wrap: break-word;">${user.bio}</div>` : ''}

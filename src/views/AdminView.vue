@@ -20,7 +20,7 @@ Chỉ user có role admin mới được truy cập
         <div v-else-if="!isAdmin" class="access-denied">
             <div class="access-denied-content">
                 <div class="denied-icon">
-                    <img src="/src/assets/icons/admin.png" alt="Access Denied" width="64" height="64">
+                    <img src="@/assets/icons/admin.png" alt="Access Denied" width="64" height="64">
                 </div>
                 <h2>Truy cập bị từ chối</h2>
                 <p>Bạn không có quyền truy cập trang quản trị</p>
@@ -41,19 +41,19 @@ Chỉ user có role admin mới được truy cập
             <!-- Tab Navigation -->
             <div class="admin-tabs">
                 <button :class="['tab-btn', { active: activeTab === 'dashboard' }]" @click="switchTab('dashboard')">
-                    <img src="/src/assets/icons/home.png" alt="Dashboard" width="18" height="18">
+                    <img src="@/assets/icons/home.png" alt="Dashboard" width="18" height="18">
                     Dashboard
                 </button>
                 <button :class="['tab-btn', { active: activeTab === 'users' }]" @click="switchTab('users')">
-                    <img src="/src/assets/icons/profile.png" alt="Users" width="18" height="18">
+                    <img src="@/assets/icons/profile.png" alt="Users" width="18" height="18">
                     Người dùng
                 </button>
                 <button :class="['tab-btn', { active: activeTab === 'posts' }]" @click="switchTab('posts')">
-                    <img src="/src/assets/icons/news.png" alt="Posts" width="18" height="18">
+                    <img src="@/assets/icons/news.png" alt="Posts" width="18" height="18">
                     Bài viết
                 </button>
                 <button :class="['tab-btn', { active: activeTab === 'comments' }]" @click="switchTab('comments')">
-                    <img src="/src/assets/icons/comment.png" alt="Comments" width="18" height="18">
+                    <img src="@/assets/icons/comment.png" alt="Comments" width="18" height="18">
                     Bình luận
                 </button>
             </div>
@@ -64,7 +64,7 @@ Chỉ user có role admin mới được truy cập
                 <div class="stats-grid">
                     <div class="stat-card">
                         <div class="stat-icon">
-                            <img src="/src/assets/icons/friends.png" alt="Users" width="24" height="24">
+                            <img src="@/assets/icons/friends.png" alt="Users" width="24" height="24">
                         </div>
                         <div class="stat-content">
                             <h3 class="stat-number">{{ formatNumber(dashboardStats.totalUsers) }}</h3>
@@ -74,7 +74,7 @@ Chỉ user có role admin mới được truy cập
 
                     <div class="stat-card">
                         <div class="stat-icon">
-                            <img src="/src/assets/icons/create_post.png" alt="Posts" width="24" height="24">
+                            <img src="@/assets/icons/create_post.png" alt="Posts" width="24" height="24">
                         </div>
                         <div class="stat-content">
                             <h3 class="stat-number">{{ formatNumber(dashboardStats.totalPosts) }}</h3>
@@ -84,7 +84,7 @@ Chỉ user có role admin mới được truy cập
 
                     <div class="stat-card">
                         <div class="stat-icon">
-                            <img src="/src/assets/icons/like.png" alt="Likes" width="24" height="24">
+                            <img src="@/assets/icons/like.png" alt="Likes" width="24" height="24">
                         </div>
                         <div class="stat-content">
                             <h3 class="stat-number">{{ formatNumber(dashboardStats.totalLikes) }}</h3>
@@ -94,7 +94,7 @@ Chỉ user có role admin mới được truy cập
 
                     <div class="stat-card">
                         <div class="stat-icon">
-                            <img src="/src/assets/icons/comment.png" alt="Comments" width="24" height="24">
+                            <img src="@/assets/icons/comment.png" alt="Comments" width="24" height="24">
                         </div>
                         <div class="stat-content">
                             <h3 class="stat-number">{{ formatNumber(dashboardStats.totalComments) }}</h3>
@@ -136,7 +136,7 @@ Chỉ user có role admin mới được truy cập
                 <div class="tab-header">
                     <h2>Quản lý người dùng</h2>
                     <button @click="loadAllUsers" :disabled="isLoadingUsers" class="refresh-btn">
-                        <img src="/src/assets/icons/setting.png" alt="Refresh" width="16" height="16">
+                        <img src="@/assets/icons/setting.png" alt="Refresh" width="16" height="16">
                         Làm mới
                     </button>
                 </div>
@@ -169,11 +169,11 @@ Chỉ user có role admin mới được truy cập
                                     <div class="table-actions">
                                         <button v-if="user.role !== 'admin'" @click="handlePromoteUser(user)"
                                             :disabled="isDeleting" class="promote-btn" title="Promote to Admin">
-                                            <img src="/src/assets/icons/admin.png" alt="Promote" width="14" height="14">
+                                            <img src="@/assets/icons/admin.png" alt="Promote" width="14" height="14">
                                         </button>
                                         <button @click="handleDeleteUser(user)" :disabled="isDeleting"
                                             class="delete-btn" title="Xóa người dùng">
-                                            <img src="/src/assets/icons/delete.png" alt="Delete" width="14" height="14">
+                                            <img src="@/assets/icons/delete.png" alt="Delete" width="14" height="14">
                                         </button>
                                     </div>
                                 </td>
@@ -188,7 +188,7 @@ Chỉ user có role admin mới được truy cập
                 <div class="tab-header">
                     <h2>Quản lý bài viết</h2>
                     <button @click="loadAllPosts" :disabled="isLoadingPosts" class="refresh-btn">
-                        <img src="/src/assets/icons/setting.png" alt="Refresh" width="16" height="16">
+                        <img src="@/assets/icons/setting.png" alt="Refresh" width="16" height="16">
                         Làm mới
                     </button>
                 </div>
@@ -219,7 +219,7 @@ Chỉ user có role admin mới được truy cập
                                     <div class="table-actions">
                                         <button @click="handleDeletePost(post)" :disabled="isDeleting"
                                             class="delete-btn" title="Xóa bài viết">
-                                            <img src="/src/assets/icons/delete.png" alt="Delete" width="14" height="14">
+                                            <img src="@/assets/icons/delete.png" alt="Delete" width="14" height="14">
                                         </button>
                                     </div>
                                 </td>
@@ -234,7 +234,7 @@ Chỉ user có role admin mới được truy cập
                 <div class="tab-header">
                     <h2>Quản lý bình luận</h2>
                     <button @click="loadAllComments" :disabled="isLoadingComments" class="refresh-btn">
-                        <img src="/src/assets/icons/setting.png" alt="Refresh" width="16" height="16">
+                        <img src="@/assets/icons/setting.png" alt="Refresh" width="16" height="16">
                         Làm mới
                     </button>
                 </div>
@@ -263,7 +263,7 @@ Chỉ user có role admin mới được truy cập
                                     <div class="table-actions">
                                         <button @click="handleDeleteComment(comment)" :disabled="isDeleting"
                                             class="delete-btn" title="Xóa bình luận">
-                                            <img src="/src/assets/icons/delete.png" alt="Delete" width="14" height="14">
+                                            <img src="@/assets/icons/delete.png" alt="Delete" width="14" height="14">
                                         </button>
                                     </div>
                                 </td>

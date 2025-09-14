@@ -8,22 +8,22 @@ Header với navigation và avatar sync - Profile-pic tự động cập nhật 
     
     <nav>
       <a href="#" class="nav-icon" title="Profile" @click.prevent="navigateTo('/profile')">
-        <img src="/src/assets/icons/profile.png" alt="Profile" width="20" height="20">
+        <img src="@/assets/icons/profile.png" alt="Profile" width="20" height="20">
       </a>
       <a href="#" class="nav-icon" title="Friends" @click.prevent="navigateTo('/friends')">
-        <img src="/src/assets/icons/friends.png" alt="Friends" width="20" height="20">
+        <img src="@/assets/icons/friends.png" alt="Friends" width="20" height="20">
       </a>
       <a href="#" class="nav-icon" title="Home" @click.prevent="navigateTo('/home')">
-        <img src="/src/assets/icons/home.png" alt="Home" width="20" height="20">
+        <img src="@/assets/icons/home.png" alt="Home" width="20" height="20">
       </a>
       <a href="#" class="nav-icon" title="News" @click.prevent="navigateTo('/news')">
-        <img src="/src/assets/icons/news.png" alt="News" width="20" height="20">
+        <img src="@/assets/icons/news.png" alt="News" width="20" height="20">
       </a>
       <a href="#" class="nav-icon" title="Messages" @click.prevent="navigateTo('/messages')">
-        <img src="/src/assets/icons/mess.png" alt="Messages" width="20" height="20">
+        <img src="@/assets/icons/mess.png" alt="Messages" width="20" height="20">
       </a>
       <a href="#" class="nav-icon" title="Notification" @click.prevent="navigateTo('/notifications')">
-        <img src="/src/assets/icons/notification.png" alt="Notification" width="20" height="20">
+        <img src="@/assets/icons/notification.png" alt="Notification" width="20" height="20">
       </a>
     </nav>
     
@@ -35,7 +35,7 @@ Header với navigation và avatar sync - Profile-pic tự động cập nhật 
       >
       
       <button class="logout-btn" @click="handleLogout" :disabled="isLoading">
-        <img src="/src/assets/icons/logout.png" alt="Logout" width="16" height="16">
+        <img src="@/assets/icons/logout.png" alt="Logout" width="16" height="16">
         <span v-if="isLoading">Đang đăng xuất...</span>
         <span v-else>Logout</span>
       </button>

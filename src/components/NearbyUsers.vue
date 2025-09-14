@@ -19,14 +19,14 @@ Tích hợp Mapbox GL JS để hiển thị interactive map với markers
             :class="['toggle-btn', { active: viewMode === 'map' }]"
             @click="handleViewModeChange('map')"
           >
-            <img src="/src/assets/icons/discover.png" alt="Map" width="16" height="16">
+            <img src="@/assets/icons/discover.png" alt="Map" width="16" height="16">
             Bản đồ
           </button>
           <button 
             :class="['toggle-btn', { active: viewMode === 'list' }]"
             @click="handleViewModeChange('list')"
           >
-            <img src="/src/assets/icons/friends.png" alt="List" width="16" height="16">
+            <img src="@/assets/icons/friends.png" alt="List" width="16" height="16">
             Danh sách
           </button>
         </div>
@@ -38,7 +38,7 @@ Tích hợp Mapbox GL JS để hiển thị interactive map với markers
           :disabled="isRefreshing"
           class="refresh-btn"
         >
-          <img src="/src/assets/icons/setting.png" alt="Refresh" width="16" height="16">
+          <img src="@/assets/icons/setting.png" alt="Refresh" width="16" height="16">
           <span v-if="isRefreshing">Đang làm mới...</span>
           <span v-else>Làm mới</span>
         </button>
@@ -108,7 +108,7 @@ Tích hợp Mapbox GL JS để hiển thị interactive map với markers
         <!-- Map info panel -->
         <div class="map-info">
           <div class="location-info">
-            <img src="/src/assets/icons/profile.png" alt="Current" width="16" height="16">
+            <img src="@/assets/icons/profile.png" alt="Current" width="16" height="16">
             <span>Vị trí hiện tại của bạn</span>
           </div>
           <div v-if="nearbyUsers.length > 0" class="users-count">
@@ -148,7 +148,7 @@ Tích hợp Mapbox GL JS để hiển thị interactive map với markers
               <h4 class="user-name">{{ user.userName }}</h4>
               <p v-if="user.bio" class="user-bio">{{ user.bio }}</p>
               <div class="user-distance">
-                <img src="/src/assets/icons/discover.png" alt="Distance" width="12" height="12">
+                <img src="@/assets/icons/discover.png" alt="Distance" width="12" height="12">
                 <span>{{ user.distanceText }}</span>
               </div>
             </div>

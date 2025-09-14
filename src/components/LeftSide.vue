@@ -8,20 +8,20 @@ Kiểm tra quyền admin và hiển thị button tương ứng
     <!-- Navigation Menu -->
     <nav class="navigation">
       <button @click="handleCreatePost" class="nav-button">
-        <img src="/src/assets/icons/create_post.png" alt="Create Post" width="18" height="18">
+        <img src="@/assets/icons/create_post.png" alt="Create Post" width="18" height="18">
         <span>Create Post</span>
       </button>
       <button @click="handleDiscover" class="nav-button">
-        <img src="/src/assets/icons/discover.png" alt="Discover" width="18" height="18">
+        <img src="@/assets/icons/discover.png" alt="Discover" width="18" height="18">
         <span>Discover</span>
       </button>
       <!-- Admin button - luôn hiển thị -->
       <button @click="handleAdmin" class="nav-button">
-        <img src="/src/assets/icons/admin.png" alt="Admin" width="18" height="18">
+        <img src="@/assets/icons/admin.png" alt="Admin" width="18" height="18">
         <span>Admin</span>
       </button>
       <button @click="handleSetting" class="nav-button">
-        <img src="/src/assets/icons/setting.png" alt="Setting" width="18" height="18">
+        <img src="@/assets/icons/setting.png" alt="Setting" width="18" height="18">
         <span>Setting</span>
       </button>
     </nav>

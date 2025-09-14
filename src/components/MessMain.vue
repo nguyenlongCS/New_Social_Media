@@ -30,7 +30,7 @@ Hiển thị danh sách tin nhắn và form gửi tin nhắn mới, hỗ trợ g
       <!-- Trạng thái chưa chọn cuộc hội thoại -->
       <div v-if="!selectedConversation" class="no-conversation">
         <div class="no-conversation-icon">
-          <img src="/src/assets/icons/mess.png" alt="Messages" width="64" height="64">
+          <img src="@/assets/icons/mess.png" alt="Messages" width="64" height="64">
         </div>
         <h3>Chọn một cuộc hội thoại</h3>
         <p>Chọn từ danh sách bên phải hoặc bắt đầu cuộc trò chuyện mới</p>
@@ -76,7 +76,7 @@ Hiển thị danh sách tin nhắn và form gửi tin nhắn mới, hỗ trợ g
                 class="delete-message-btn"
                 title="Xóa tin nhắn"
               >
-                <img src="/src/assets/icons/delete.png" alt="Delete" width="12" height="12">
+                <img src="@/assets/icons/delete.png" alt="Delete" width="12" height="12">
               </button>
             </div>
           </div>
@@ -103,7 +103,7 @@ Hiển thị danh sách tin nhắn và form gửi tin nhắn mới, hỗ trợ g
           class="attach-btn"
           title="Đính kèm ảnh/video"
         >
-          <img src="/src/assets/icons/camera.png" alt="Attach" width="20" height="20">
+          <img src="@/assets/icons/camera.png" alt="Attach" width="20" height="20">
         </button>
         
         <!-- Input tin nhắn -->
@@ -123,7 +123,7 @@ Hiển thị danh sách tin nhắn và form gửi tin nhắn mới, hỗ trợ g
           class="send-btn"
           :disabled="!messageText.trim() && !selectedFile || isSending"
         >
-          <img src="/src/assets/icons/send.png" alt="Send" width="20" height="20">
+          <img src="@/assets/icons/send.png" alt="Send" width="20" height="20">
         </button>
       </div>
       
@@ -134,7 +134,7 @@ Hiển thị danh sách tin nhắn và form gửi tin nhắn mới, hỗ trợ g
           <video v-else-if="selectedFile.type.startsWith('video/')" :src="filePreview" class="preview-video" controls></video>
           
           <button @click="cancelFileSelection" class="cancel-file-btn">
-            <img src="/src/assets/icons/delete.png" alt="Cancel" width="16" height="16">
+            <img src="@/assets/icons/delete.png" alt="Cancel" width="16" height="16">
           </button>
         </div>
         

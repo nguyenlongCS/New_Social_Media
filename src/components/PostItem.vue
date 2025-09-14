@@ -70,12 +70,11 @@ Component hiển thị một bài viết với media carousel - Fixed like icon 
 
     <div class="actions">
       <button @click="handleLike" :disabled="isLiking" :class="{ liked: post.isLiked }">
-        <img :src="post.isLiked ? '/src/assets/icons/liked.png' : '/src/assets/icons/like.png'"
-          :alt="post.isLiked ? 'Liked' : 'Like'" width="16" height="16">
+        <img :src="post.isLiked ? likedIcon : likeIcon" :alt="post.isLiked ? 'Liked' : 'Like'" width="16" height="16">
         <span>{{ post.isLiked ? 'Liked' : 'Like' }} ({{ post.likes || 0 }})</span>
       </button>
       <button @click="handleComment">
-        <img src="/src/assets/icons/comment.png" alt="Comment" width="16" height="16">
+        <img src="@/assets/icons/comment.png" alt="Comment" width="16" height="16">
         <span>Comment ({{ post.commentsCount || 0 }})</span>
       </button>
     </div>
@@ -84,6 +83,8 @@ Component hiển thị một bài viết với media carousel - Fixed like icon 
 
 <script>
 import { ref, onMounted, onUnmounted, computed } from 'vue'
+import likeIcon from '@/assets/icons/like.png'
+import likedIcon from '@/assets/icons/liked.png'
 
 export default {
   name: 'PostItem',
@@ -213,6 +214,8 @@ export default {
     }
 
     return {
+      likeIcon,
+      likedIcon,
       postElement,
       currentMediaIndex,
       isLiking,

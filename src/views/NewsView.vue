@@ -25,7 +25,7 @@ Click vào bài viết sẽ mở link ngoài tới nguồn gốc
       <!-- Error state -->
       <div v-else-if="errorMessage && newsList.length === 0" class="error-state">
         <div class="error-icon">
-          <img src="/src/assets/icons/notification.png" alt="Error" class="error-image">
+          <img src="@/assets/icons/notification.png" alt="Error" class="error-image">
         </div>
         <h3>Không thể tải tin tức</h3>
         <p>{{ errorMessage }}</p>
@@ -42,7 +42,7 @@ Click vào bài viết sẽ mở link ngoài tới nguồn gốc
       <!-- Empty state -->
       <div v-else class="empty-state">
         <div class="empty-icon">
-          <img src="/src/assets/icons/news.png" alt="Empty" class="empty-image">
+          <img src="@/assets/icons/news.png" alt="Empty" class="empty-image">
         </div>
         <h3>Chưa có tin tức</h3>
         <p>Hiện tại chưa có bài báo nào. Vui lòng thử lại sau.</p>

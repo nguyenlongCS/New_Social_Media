@@ -9,7 +9,7 @@ Hiển thị các section buttons: Danh sách bạn, Gợi ý bạn bè, Lời m
         :class="['section-btn', { active: activeTab === 'friends' }]"
         @click="$emit('switch-tab', 'friends')"
       >
-        <img src="/src/assets/icons/friends.png" alt="Friends" class="section-icon">
+        <img src="@/assets/icons/friends.png" alt="Friends" class="section-icon">
         <span>Danh sách bạn</span>
       </button>
       
@@ -17,7 +17,7 @@ Hiển thị các section buttons: Danh sách bạn, Gợi ý bạn bè, Lời m
         :class="['section-btn', { active: activeTab === 'suggestions' }]"
         @click="$emit('switch-tab', 'suggestions')"
       >
-        <img src="/src/assets/icons/suggest.png" alt="Suggestions" class="section-icon">
+        <img src="@/assets/icons/suggest.png" alt="Suggestions" class="section-icon">
         <span>Gợi ý bạn bè</span>
       </button>
       
@@ -25,7 +25,7 @@ Hiển thị các section buttons: Danh sách bạn, Gợi ý bạn bè, Lời m
         :class="['section-btn', { active: activeTab === 'requests' }]"
         @click="$emit('switch-tab', 'requests')"
       >
-        <img src="/src/assets/icons/notification.png" alt="Requests" class="section-icon">
+        <img src="@/assets/icons/notification.png" alt="Requests" class="section-icon">
         <span>Lời mời kết bạn</span>
         <span v-if="requestsCount > 0" class="notification-badge">{{ requestsCount }}</span>
       </button>
@@ -34,7 +34,7 @@ Hiển thị các section buttons: Danh sách bạn, Gợi ý bạn bè, Lời m
         :class="['section-btn', { active: activeTab === 'nearby' }]"
         @click="$emit('switch-tab', 'nearby')"
       >
-        <img src="/src/assets/icons/discover.png" alt="Nearby" class="section-icon">
+        <img src="@/assets/icons/discover.png" alt="Nearby" class="section-icon">
         <span>Tìm bạn xung quanh</span>
       </button>
     </div>
