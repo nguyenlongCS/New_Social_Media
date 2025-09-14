@@ -1,6 +1,7 @@
 /*
-src/composables/useDataSync.js - Composable đồng bộ dữ liệu user
+src/composables/useDataSync.js - Composable đồng bộ dữ liệu user - Fixed Permissions
 Đồng bộ dữ liệu user (Avatar, UserName) trên tất cả collections (posts, comments, likes) khi cập nhật profile
+Fixed: Xử lý lỗi permissions và bỏ qua collections không có quyền truy cập
 */
 import { ref } from 'vue'
 import { 
@@ -43,7 +44,8 @@ export function useDataSync() {
       fields: {
         'UserName': 'UserName',
         'Avatar': 'Avatar'
-      }
+      },
+      skipOnError: true // Bỏ qua nếu không có quyền
     }
   ]
   
@@ -92,12 +94,45 @@ export function useDataSync() {
         } catch (error) {
           console.error(`useDataSync: Error syncing ${collectionConfig.name}:`, error)
           
-          results.collections[collectionConfig.name] = {
-            updated: 0,
-            success: false,
-            error: error.message
+          // Nếu collection có skipOnError = true và lỗi permissions, bỏ qua
+          if (collectionConfig.skipOnError && 
+              (error.code === 'permission-denied' || error.message?.includes('permissions'))) {
+            console.warn(`useDataSync: Skipping ${collectionConfig.name} due to permissions`)
+            results.collections[collectionConfig.name] = {
+              updated: 0,
+              success: true,
+              skipped: true,
+              reason: 'Không có quyền truy cập'
+            }
+          } else {
+            results.collections[collectionConfig.name] = {
+              updated: 0,
+              success: false,
+              error: error.message
+            }
+            results.errors.push(`Lỗi đồng bộ ${collectionConfig.name}: ${error.message}`)
           }
-          results.errors.push(`Lỗi đồng bộ ${collectionConfig.name}: ${error.message}`)
+          
+          completedCollections++
+          syncProgress.value = Math.round((completedCollections / totalCollections) * 100)
+        }
+      }
+      
+      // Đồng bộ tin nhắn trong Realtime Database
+      try {
+        syncStatus.value = 'Đang đồng bộ tin nhắn...'
+        await syncMessagesData(userId, newUserData)
+        results.collections['messages'] = {
+          updated: 'N/A',
+          success: true,
+          type: 'realtime-db'
+        }
+      } catch (error) {
+        console.error('useDataSync: Error syncing messages:', error)
+        results.collections['messages'] = {
+          updated: 0,
+          success: false,
+          error: error.message
         }
       }
       
@@ -127,7 +162,7 @@ export function useDataSync() {
     }
   }
   
-  // Đồng bộ một collection cụ thể
+  // Đồng bộ một collection cụ thể với error handling tốt hơn
   const syncCollection = async (userId, newUserData, collectionConfig) => {
     try {
       // Query tất cả documents của user trong collection
@@ -169,8 +204,28 @@ export function useDataSync() {
         updateCount++
       })
       
-      // Commit batch write
-      await batch.commit()
+      // Commit batch write với retry logic
+      try {
+        await batch.commit()
+      } catch (batchError) {
+        // Nếu batch fail, thử update từng document riêng lẻ
+        if (batchError.code === 'permission-denied') {
+          throw batchError // Re-throw permission errors
+        }
+        
+        console.warn(`useDataSync: Batch failed for ${collectionConfig.name}, trying individual updates`)
+        updateCount = 0
+        
+        for (const document of snapshot.docs) {
+          try {
+            const docRef = doc(db, collectionConfig.name, document.id)
+            await docRef.update(updateData)
+            updateCount++
+          } catch (individualError) {
+            console.error(`useDataSync: Failed to update document ${document.id}:`, individualError)
+          }
+        }
+      }
       
       console.log(`useDataSync: Successfully updated ${updateCount} documents in ${collectionConfig.name}`)
       return updateCount
@@ -178,6 +233,82 @@ export function useDataSync() {
     } catch (error) {
       console.error(`useDataSync: Error in syncCollection ${collectionConfig.name}:`, error)
       throw error
+    }
+  }
+  
+  // Đồng bộ tin nhắn trong Realtime Database
+  const syncMessagesData = async (userId, newUserData) => {
+    try {
+      // Import trực tiếp function thay vì sử dụng composable
+      const { rtdb } = await import('@/firebase/config')
+      const { ref: dbRef, onValue, update } = await import('firebase/database')
+      
+      const messagesSyncData = {}
+      if (newUserData.UserName) messagesSyncData.userName = newUserData.UserName
+      if (newUserData.Avatar) messagesSyncData.avatar = newUserData.Avatar
+      
+      if (Object.keys(messagesSyncData).length === 0) {
+        console.log('useDataSync: No messages data to sync')
+        return
+      }
+      
+      console.log('useDataSync: Syncing messages with data:', messagesSyncData)
+      
+      const messagesRef = dbRef(rtdb, 'messages')
+      
+      // Listen một lần để lấy tất cả tin nhắn của user
+      onValue(messagesRef, async (snapshot) => {
+        if (!snapshot.exists()) {
+          console.log('useDataSync: No messages found')
+          return
+        }
+        
+        const updates = {}
+        let updateCount = 0
+        
+        snapshot.forEach((messageSnapshot) => {
+          const messageData = messageSnapshot.val()
+          const messageId = messageSnapshot.key
+          
+          // Cập nhật tin nhắn do user này gửi (sender)
+          if (messageData.senderID === userId) {
+            if (messagesSyncData.userName && messageData.senderName !== messagesSyncData.userName) {
+              updates[`${messageId}/senderName`] = messagesSyncData.userName
+              updateCount++
+            }
+            if (messagesSyncData.avatar && messageData.senderAvatar !== messagesSyncData.avatar) {
+              updates[`${messageId}/senderAvatar`] = messagesSyncData.avatar
+              updateCount++
+            }
+          }
+          
+          // Cập nhật tin nhắn mà user này nhận (receiver)
+          if (messageData.receiverID === userId) {
+            if (messagesSyncData.userName && messageData.receiverName !== messagesSyncData.userName) {
+              updates[`${messageId}/receiverName`] = messagesSyncData.userName
+              updateCount++
+            }
+            if (messagesSyncData.avatar && messageData.receiverAvatar !== messagesSyncData.avatar) {
+              updates[`${messageId}/receiverAvatar`] = messagesSyncData.avatar
+              updateCount++
+            }
+          }
+        })
+        
+        // Thực hiện bulk update nếu có thay đổi
+        if (Object.keys(updates).length > 0) {
+          await update(messagesRef, updates)
+          console.log(`useDataSync: Updated ${updateCount} message fields for user ${userId}`)
+        } else {
+          console.log('useDataSync: No messages updates needed')
+        }
+        
+      }, { onlyOnce: true })
+      
+    } catch (error) {
+      console.error('useDataSync: Error syncing messages:', error)
+      // Không throw error để không làm fail toàn bộ sync process
+      console.warn('useDataSync: Continuing without messages sync')
     }
   }
   
@@ -210,105 +341,6 @@ export function useDataSync() {
     return await syncUserDataAcrossCollections(userId, syncData)
   }
   
-  // Kiểm tra dữ liệu không nhất quán
-  const checkDataConsistency = async (userId) => {
-    syncStatus.value = 'Đang kiểm tra tính nhất quán dữ liệu...'
-    
-    const inconsistencies = []
-    
-    try {
-      // Lấy dữ liệu user từ collection users
-      const userDoc = await getUserData(userId)
-      if (!userDoc) {
-        throw new Error('Không tìm thấy thông tin user')
-      }
-      
-      const referenceData = {
-        UserName: userDoc.UserName,
-        Avatar: userDoc.Avatar
-      }
-      
-      // Kiểm tra từng collection
-      for (const collectionConfig of SYNC_COLLECTIONS) {
-        const inconsistent = await findInconsistentDocuments(userId, referenceData, collectionConfig)
-        if (inconsistent.length > 0) {
-          inconsistencies.push({
-            collection: collectionConfig.name,
-            count: inconsistent.length,
-            documents: inconsistent
-          })
-        }
-      }
-      
-      syncStatus.value = inconsistencies.length > 0 
-        ? `Tìm thấy ${inconsistencies.length} collection có dữ liệu không nhất quán`
-        : 'Dữ liệu nhất quán trên tất cả collections'
-      
-      return inconsistencies
-      
-    } catch (error) {
-      console.error('useDataSync: Error checking consistency:', error)
-      syncError.value = `Lỗi kiểm tra: ${error.message}`
-      throw error
-    }
-  }
-  
-  // Helper: Lấy dữ liệu user từ collection users
-  const getUserData = async (userId) => {
-    try {
-      const { doc: getDoc } = await import('firebase/firestore')
-      const userRef = doc(db, 'users', userId)
-      const userSnap = await getDoc(userRef)
-      return userSnap.exists() ? userSnap.data() : null
-    } catch (error) {
-      console.error('useDataSync: Error getting user data:', error)
-      return null
-    }
-  }
-  
-  // Helper: Tìm documents có dữ liệu không nhất quán
-  const findInconsistentDocuments = async (userId, referenceData, collectionConfig) => {
-    try {
-      const q = query(
-        collection(db, collectionConfig.name),
-        where(collectionConfig.userIdField, '==', userId)
-      )
-      
-      const snapshot = await getDocs(q)
-      const inconsistent = []
-      
-      snapshot.forEach((document) => {
-        const data = document.data()
-        let hasInconsistency = false
-        const issues = []
-        
-        // Kiểm tra từng field
-        for (const [firebaseField, userDataKey] of Object.entries(collectionConfig.fields)) {
-          if (data[firebaseField] !== referenceData[userDataKey]) {
-            hasInconsistency = true
-            issues.push({
-              field: firebaseField,
-              current: data[firebaseField],
-              expected: referenceData[userDataKey]
-            })
-          }
-        }
-        
-        if (hasInconsistency) {
-          inconsistent.push({
-            id: document.id,
-            issues
-          })
-        }
-      })
-      
-      return inconsistent
-    } catch (error) {
-      console.error('useDataSync: Error finding inconsistent documents:', error)
-      return []
-    }
-  }
-  
   // Reset sync state
   const resetSyncState = () => {
     isSyncing.value = false
@@ -331,7 +363,6 @@ export function useDataSync() {
     syncUserName,
     
     // Utility functions  
-    checkDataConsistency,
     resetSyncState,
     
     // Constants

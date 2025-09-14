@@ -15,7 +15,8 @@ import {
   query,
   orderByChild,
   equalTo,
-  limitToLast
+  limitToLast,
+  update
 } from 'firebase/database'
 import { 
   ref as storageRef, 
@@ -270,14 +271,27 @@ export function useMessages() {
     try {
       const fileExtension = file.name.split('.').pop()
       const fileName = `${messageId}_${Date.now()}.${fileExtension}`
+      
+      // Sử dụng đúng storage bucket
       const mediaRef = storageRef(storage, `messages/${fileName}`)
+      
+      console.log('Uploading file to:', `messages/${fileName}`)
       
       const snapshot = await uploadBytes(mediaRef, file)
       const downloadURL = await getDownloadURL(snapshot.ref)
       
+      console.log('File uploaded successfully:', downloadURL)
       return downloadURL
+      
     } catch (error) {
       console.error('Error uploading media:', error)
+      console.error('Error code:', error.code)
+      console.error('Error message:', error.message)
+      
+      if (error.code === 'storage/unauthorized') {
+        throw new Error('Không có quyền upload file. Vui lòng kiểm tra Storage Rules.')
+      }
+      
       throw new Error('Không thể upload file')
     }
   }
@@ -291,23 +305,42 @@ export function useMessages() {
     isSending.value = true
     
     try {
-      // Lấy thông tin người nhận từ danh sách conversations hoặc users
-      let receiverInfo = conversations.value.find(conv => conv.partnerId === receiverId)
+      // Lấy thông tin sender từ Firestore collection "users" thay vì Firebase Auth
+      const senderInfo = await userInfoHelper.getUserInfoForContent(currentUser)
+      if (!senderInfo) {
+        throw new Error('Không thể lấy thông tin người gửi')
+      }
+      
+      // Lấy thông tin người nhận từ Firestore
+      let receiverInfo = await userInfoHelper.getUserInfoFromFirestore(receiverId)
+      
+      // Fallback: tìm trong danh sách conversations hoặc users hiện có
       if (!receiverInfo) {
-        receiverInfo = usersList.value.find(user => user.userId === receiverId)
+        receiverInfo = conversations.value.find(conv => conv.partnerId === receiverId)
+        if (!receiverInfo) {
+          receiverInfo = usersList.value.find(user => user.userId === receiverId)
+        }
+        
+        // Convert format nếu tìm thấy trong lists
+        if (receiverInfo) {
+          receiverInfo = {
+            userName: receiverInfo.partnerName || receiverInfo.userName,
+            avatar: receiverInfo.partnerAvatar || receiverInfo.avatar
+          }
+        }
       }
       
       const messageId = generateMessageId()
       const timestamp = Date.now()
       
-      // Chuẩn bị dữ liệu tin nhắn cơ bản
+      // Chuẩn bị dữ liệu tin nhắn với thông tin từ Firestore
       const baseMessageData = {
-        senderID: currentUser.uid,
-        senderName: currentUser.displayName || currentUser.email?.split('@')[0] || 'User',
-        senderAvatar: currentUser.photoURL || '',
+        senderID: senderInfo.UserID,
+        senderName: senderInfo.UserName, // Từ Firestore, không phải email
+        senderAvatar: senderInfo.Avatar, // Từ Firestore, không phải default
         receiverID: receiverId,
-        receiverName: receiverInfo?.partnerName || receiverInfo?.userName || 'User',
-        receiverAvatar: receiverInfo?.partnerAvatar || receiverInfo?.avatar || '',
+        receiverName: receiverInfo?.userName || 'User',
+        receiverAvatar: receiverInfo?.avatar || '',
         timestamp: timestamp,
         isRead: false
       }
