@@ -33,6 +33,6 @@ export const db = getFirestore(app, 'social-media-web-database')
 // Khởi tạo Storage với bucket tùy chỉnh cho social-media-web
 export const storage = getStorage(app, 'gs://social-media-web-storage')
 
-export const rtdb = getDatabase(app)
+export const rtdb = getDatabase(app, 'social-media-web-rtdb')
 
 export default app
