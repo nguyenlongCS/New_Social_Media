@@ -15,8 +15,8 @@ Kiểm tra quyền admin và hiển thị button tương ứng
         <img src="/src/assets/icons/discover.png" alt="Discover" width="18" height="18">
         <span>Discover</span>
       </button>
-      <!-- Admin button - chỉ hiển thị khi user có quyền admin -->
-      <button v-if="isAdmin" @click="handleAdmin" class="nav-button admin-button">
+      <!-- Admin button - luôn hiển thị -->
+      <button @click="handleAdmin" class="nav-button">
         <img src="/src/assets/icons/admin.png" alt="Admin" width="18" height="18">
         <span>Admin</span>
       </button>
@@ -25,78 +25,61 @@ Kiểm tra quyền admin và hiển thị button tương ứng
         <span>Setting</span>
       </button>
     </nav>
-    
+
     <!-- Divider -->
     <hr class="divider">
-    
+
     <!-- Friends Section -->
     <div class="friends-section">
       <div class="friends-header">
         <h3 class="friends-title">
-          Bạn bè 
+          Bạn bè
           <span class="friends-count" v-if="!isLoadingFriends">({{ friendsList.length }})</span>
         </h3>
       </div>
-      
+
       <!-- Loading State -->
       <div v-if="isLoadingFriends" class="friends-loading">
         <div class="loading-spinner"></div>
         <p class="loading-text">Đang tải bạn bè...</p>
       </div>
-      
+
       <!-- Error State -->
       <div v-else-if="errorMessage" class="friends-error">
         <p class="error-text">{{ errorMessage }}</p>
         <button @click="loadFriends" class="retry-button">Thử lại</button>
       </div>
-      
+
       <!-- Empty State -->
       <div v-else-if="friendsList.length === 0" class="friends-empty">
         <p class="empty-text">Chưa có bạn bè nào</p>
       </div>
-      
+
       <!-- Friends List -->
       <div v-else class="friends-list">
-        <div 
-          v-for="friend in displayedFriends"
-          :key="friend.userId"
-          class="friend-item"
-          @click="handleFriendClick(friend)"
-        >
+        <div v-for="friend in displayedFriends" :key="friend.userId" class="friend-item"
+          @click="handleFriendClick(friend)">
           <div class="friend-avatar">
-            <img 
-              v-if="friend.avatar" 
-              :src="friend.avatar" 
-              :alt="friend.userName"
-              class="avatar-image"
-              @error="handleAvatarError"
-            >
+            <img v-if="friend.avatar" :src="friend.avatar" :alt="friend.userName" class="avatar-image"
+              @error="handleAvatarError">
             <div v-else class="default-avatar">
               {{ getInitials(friend.userName) }}
             </div>
             <div class="online-indicator" v-if="isOnline(friend)"></div>
           </div>
-          
+
           <div class="friend-info">
             <span class="friend-name">{{ friend.userName }}</span>
           </div>
         </div>
-        
+
         <!-- Show More/Less Buttons -->
         <div v-if="friendsList.length > FRIENDS_DISPLAY_LIMIT" class="friends-actions">
-          <button 
-            v-if="!showAllFriends"
-            @click="showAllFriends = true"
-            class="toggle-friends-button"
-          >
+          <button v-if="!showAllFriends" @click="showAllFriends = true" class="toggle-friends-button">
             Xem thêm {{ friendsList.length - FRIENDS_DISPLAY_LIMIT }} bạn bè
           </button>
-          
-          <button 
-            v-else
-            @click="showAllFriends = false"
-            class="toggle-friends-button"
-          >
+
+          <button v-else @click="showAllFriends = false" class="toggle-friends-button">
             Ẩn bớt
           </button>
         </div>
@@ -122,54 +105,54 @@ export default {
   },
   setup(props) {
     const router = useRouter()
-    
+
     // Constants
     const FRIENDS_DISPLAY_LIMIT = 5
-    
+
     // Reactive state
     const friendsList = ref([])
     const isLoadingFriends = ref(false)
     const showAllFriends = ref(false)
     const errorMessage = ref('')
     const isAdmin = ref(false)
-    
+
     // Composables
     const { user, isLoggedIn, waitForUserWithTimeout } = useAuthUser()
     const friendsComposable = useFriends()
-    
+
     // Computed
     const displayedFriends = computed(() => {
       const limit = showAllFriends.value ? friendsList.value.length : FRIENDS_DISPLAY_LIMIT
       return friendsList.value.slice(0, limit)
     })
-    
+
     // Kiểm tra quyền admin của user hiện tại
     const checkAdminRole = async (userId) => {
       if (!userId) return false
-      
+
       try {
         const { collection, query, where, getDocs } = await import('firebase/firestore')
         const { db } = await import('@/firebase/config')
-        
+
         const usersQuery = query(
           collection(db, 'users'),
           where('UserID', '==', userId)
         )
-        
+
         const snapshot = await getDocs(usersQuery)
-        
+
         if (!snapshot.empty) {
           const userData = snapshot.docs[0].data()
           return userData.Role === 'admin'
         }
-        
+
         return false
       } catch (error) {
         console.error('Error checking admin role:', error)
         return false
       }
     }
-    
+
     // Methods
     const getInitials = (name) => {
       if (!name) return 'U'
@@ -180,16 +163,16 @@ export default {
         .toUpperCase()
         .slice(0, 2)
     }
-    
+
     const isOnline = (friend) => {
       // Placeholder for online status - có thể implement sau
       return Math.random() > 0.7 // Random để demo
     }
-    
+
     const handleAvatarError = (event) => {
       event.target.style.display = 'none'
     }
-    
+
     // Load friends từ Firestore
     const loadFriends = async (showLoading = true) => {
       try {
@@ -197,15 +180,15 @@ export default {
           isLoadingFriends.value = true
         }
         errorMessage.value = ''
-        
+
         const currentUser = await waitForUserWithTimeout(5000)
         if (!currentUser?.uid) {
           throw new Error('Người dùng chưa đăng nhập')
         }
-        
+
         await friendsComposable.loadFriendsList(currentUser.uid)
         friendsList.value = [...friendsComposable.friendsList.value]
-        
+
       } catch (error) {
         console.error('LeftSide: Error loading friends:', error)
         errorMessage.value = 'Không thể tải danh sách bạn bè'
@@ -216,41 +199,45 @@ export default {
         }
       }
     }
-    
+
     // Navigation handlers
     const handleCreatePost = () => {
       router.push('/create-post')
     }
-    
+
     const handleDiscover = () => {
       router.push('/discover')
     }
-    
+
     const handleAdmin = () => {
-      // Điều hướng đến trang admin
-      router.push('/admin')
+      if (isAdmin.value) {
+        router.push('/admin')
+      } else {
+        alert('Bạn không có quyền truy cập trang Admin!')
+      }
     }
-    
+
+
     const handleSetting = () => {
       // TODO: Implement settings navigation  
       console.log('Settings clicked')
     }
-    
+
     const navigateToFriends = () => {
       router.push('/friends')
     }
-    
+
     const handleFriendClick = (friend) => {
       // TODO: Navigate to friend profile or open chat
       console.log('Friend clicked:', friend.userName)
     }
-    
+
     // Watchers
     watch(user, async (newUser) => {
       if (newUser?.uid) {
         // Kiểm tra quyền admin
         isAdmin.value = await checkAdminRole(newUser.uid)
-        
+
         // Load friends nếu chưa có
         if (friendsList.value.length === 0) {
           await loadFriends()
@@ -259,14 +246,14 @@ export default {
         isAdmin.value = false
       }
     }, { immediate: true })
-    
+
     // Sync với external props nếu có
     watch(() => props.externalFriendsList, (newList) => {
       if (newList && newList.length > 0 && !isLoadingFriends.value) {
         friendsList.value = [...newList]
       }
     }, { immediate: true, deep: true })
-    
+
     // Watch login status
     watch(isLoggedIn, async (loggedIn) => {
       if (loggedIn && friendsList.value.length === 0) {
@@ -277,19 +264,19 @@ export default {
         isAdmin.value = false
       }
     })
-    
+
     // Lifecycle
     onMounted(async () => {
       if (isLoggedIn.value && friendsList.value.length === 0) {
         await loadFriends()
       }
     })
-    
+
     onUnmounted(() => {
       // Cleanup nếu cần
       friendsComposable.resetFriendsData?.()
     })
-    
+
     return {
       // Data
       friendsList,
@@ -299,7 +286,7 @@ export default {
       errorMessage,
       isAdmin,
       FRIENDS_DISPLAY_LIMIT,
-      
+
       // Methods
       getInitials,
       isOnline,
@@ -363,22 +350,6 @@ export default {
   transform: translateY(0);
 }
 
-/* Admin button styling */
-.admin-button {
-  background: linear-gradient(90deg, #dc2626, #ef4444);
-  color: white;
-  font-weight: 500;
-}
-
-.admin-button:hover {
-  background: linear-gradient(90deg, #b91c1c, #dc2626);
-  transform: translateY(-1px);
-}
-
-.admin-button img {
-  filter: brightness(0) invert(1);
-}
-
 /* Divider */
 .divider {
   border: none;
@@ -436,8 +407,13 @@ export default {
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 .loading-text {
