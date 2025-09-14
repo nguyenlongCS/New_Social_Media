@@ -4,177 +4,134 @@ Trang đăng nhập/đăng ký với error handling đơn giản
 -->
 <template>
   <div class="login-container">
-    <div class="login-card">
-      <!-- Header -->
-      <div class="login-header">
-        <h1 class="logo">Social Media</h1>
-        <p class="subtitle">Kết nối với bạn bè và thế giới xung quanh</p>
+    <div class="login-wrapper">
+      <div class="login-card">
+        <!-- Header -->
+        <div class="login-header">
+          <h1 class="logo">Social Media</h1>
+          <p class="subtitle">Kết nối với bạn bè và thế giới xung quanh</p>
+        </div>
+
+        <!-- Tab buttons -->
+        <div class="tab-buttons">
+          <button :class="{ active: activeTab === 'login' }" @click="switchTab('login')">
+            Đăng nhập
+          </button>
+          <button :class="{ active: activeTab === 'register' }" @click="switchTab('register')">
+            Đăng ký
+          </button>
+        </div>
+
+        <!-- Form đăng nhập -->
+        <form v-if="activeTab === 'login'" @submit.prevent="handleLogin" class="auth-form">
+          <div class="form-group">
+            <label for="login-email">Email</label>
+            <input id="login-email" type="email" v-model="loginForm.email" placeholder="Nhập địa chỉ email" required>
+          </div>
+
+          <div class="form-group">
+            <label for="login-password">Mật khẩu</label>
+            <input id="login-password" type="password" v-model="loginForm.password" placeholder="Nhập mật khẩu"
+              required>
+          </div>
+
+          <div class="form-options">
+            <label class="checkbox-label">
+              <input type="checkbox" v-model="loginForm.rememberMe">
+              <span class="checkmark"></span>
+              Ghi nhớ đăng nhập
+            </label>
+
+            <button type="button" class="forgot-password" @click="handleForgotPassword">
+              Quên mật khẩu?
+            </button>
+          </div>
+
+          <div v-if="errorMessage" class="error-message">
+            {{ errorMessage }}
+          </div>
+
+          <button type="submit" class="submit-btn" :disabled="isLoading">
+            <span v-if="isLoading">Đang đăng nhập...</span>
+            <span v-else>Đăng nhập</span>
+          </button>
+
+          <div class="divider"></div>
+
+          <div class="social-buttons">
+            <button type="button" class="social-btn facebook-btn" @click="handleFacebookLogin" :disabled="isLoading">
+              <img src="/src/assets/icons/facebook.png" alt="Facebook" width="20" height="20">
+              <span>Đăng nhập với Facebook</span>
+            </button>
+
+            <button type="button" class="social-btn google-btn" @click="handleGoogleLogin" :disabled="isLoading">
+              <img src="/src/assets/icons/google.png" alt="Google" width="20" height="20">
+              <span>Đăng nhập với Google</span>
+            </button>
+          </div>
+        </form>
+
+        <!-- Form đăng ký -->
+        <form v-if="activeTab === 'register'" @submit.prevent="handleRegister" class="auth-form">
+          <div class="form-group">
+            <label for="register-email">Email</label>
+            <input id="register-email" type="email" v-model="registerForm.email" placeholder="Nhập địa chỉ email"
+              required>
+          </div>
+
+          <div class="form-group">
+            <label for="register-password">Mật khẩu</label>
+            <input id="register-password" type="password" v-model="registerForm.password"
+              placeholder="Nhập mật khẩu (tối thiểu 6 ký tự)" required>
+          </div>
+
+          <div class="form-group">
+            <label for="confirm-password">Xác nhận mật khẩu</label>
+            <input id="confirm-password" type="password" v-model="registerForm.confirmPassword"
+              placeholder="Nhập lại mật khẩu" required>
+          </div>
+
+          <div v-if="errorMessage" class="error-message">
+            {{ errorMessage }}
+          </div>
+
+          <div v-if="passwordError" class="error-message">
+            {{ passwordError }}
+          </div>
+
+          <button type="submit" class="submit-btn" :disabled="isLoading">
+            <span v-if="isLoading">Đang tạo tài khoản...</span>
+            <span v-else>Đăng ký</span>
+          </button>
+
+          <div class="divider">
+            <span>hoặc</span>
+          </div>
+
+          <div class="social-buttons">
+            <button type="button" class="social-btn facebook-btn" @click="handleFacebookLogin" :disabled="isLoading">
+              <img src="/src/assets/icons/facebook.png" alt="Facebook" width="20" height="20">
+              <span>Đăng ký với Facebook</span>
+            </button>
+
+            <button type="button" class="social-btn google-btn" @click="handleGoogleLogin" :disabled="isLoading">
+              <img src="/src/assets/icons/google.png" alt="Google" width="20" height="20">
+              <span>Đăng ký với Google</span>
+            </button>
+          </div>
+        </form>
+
+        <!-- Success message cho forgot password -->
+        <div v-if="resetEmailSent" class="success-message">
+          Email đặt lại mật khẩu đã được gửi. Vui lòng kiểm tra hộp thư của bạn.
+        </div>
       </div>
-      
-      <!-- Tab buttons -->
-      <div class="tab-buttons">
-        <button 
-          :class="{ active: activeTab === 'login' }"
-          @click="switchTab('login')"
-        >
-          Đăng nhập
-        </button>
-        <button 
-          :class="{ active: activeTab === 'register' }"
-          @click="switchTab('register')"
-        >
-          Đăng ký
-        </button>
-      </div>
-      
-      <!-- Form đăng nhập -->
-      <form v-if="activeTab === 'login'" @submit.prevent="handleLogin" class="auth-form">
-        <div class="form-group">
-          <label for="login-email">Email</label>
-          <input 
-            id="login-email"
-            type="email" 
-            v-model="loginForm.email"
-            placeholder="Nhập địa chỉ email"
-            required
-          >
-        </div>
-        
-        <div class="form-group">
-          <label for="login-password">Mật khẩu</label>
-          <input 
-            id="login-password"
-            type="password" 
-            v-model="loginForm.password"
-            placeholder="Nhập mật khẩu"
-            required
-          >
-        </div>
-        
-        <div class="form-options">
-          <label class="checkbox-label">
-            <input type="checkbox" v-model="loginForm.rememberMe">
-            <span class="checkmark"></span>
-            Ghi nhớ đăng nhập
-          </label>
-          
-          <button type="button" class="forgot-password" @click="handleForgotPassword">
-            Quên mật khẩu?
-          </button>
-        </div>
-        
-        <div v-if="errorMessage" class="error-message">
-          {{ errorMessage }}
-        </div>
-        
-        <button type="submit" class="submit-btn" :disabled="isLoading">
-          <span v-if="isLoading">Đang đăng nhập...</span>
-          <span v-else>Đăng nhập</span>
-        </button>
-        
-        <div class="divider"></div>
-        
-        <div class="social-buttons">
-          <button 
-            type="button" 
-            class="social-btn facebook-btn" 
-            @click="handleFacebookLogin"
-            :disabled="isLoading"
-          >
-            <img src="/src/assets/icons/facebook.png" alt="Facebook" width="20" height="20">
-            <span>Đăng nhập với Facebook</span>
-          </button>
-          
-          <button 
-            type="button" 
-            class="social-btn google-btn" 
-            @click="handleGoogleLogin"
-            :disabled="isLoading"
-          >
-            <img src="/src/assets/icons/google.png" alt="Google" width="20" height="20">
-            <span>Đăng nhập với Google</span>
-          </button>
-        </div>
-      </form>
-      
-      <!-- Form đăng ký -->
-      <form v-if="activeTab === 'register'" @submit.prevent="handleRegister" class="auth-form">
-        <div class="form-group">
-          <label for="register-email">Email</label>
-          <input 
-            id="register-email"
-            type="email" 
-            v-model="registerForm.email"
-            placeholder="Nhập địa chỉ email"
-            required
-          >
-        </div>
-        
-        <div class="form-group">
-          <label for="register-password">Mật khẩu</label>
-          <input 
-            id="register-password"
-            type="password" 
-            v-model="registerForm.password"
-            placeholder="Nhập mật khẩu (tối thiểu 6 ký tự)"
-            required
-          >
-        </div>
-        
-        <div class="form-group">
-          <label for="confirm-password">Xác nhận mật khẩu</label>
-          <input 
-            id="confirm-password"
-            type="password" 
-            v-model="registerForm.confirmPassword"
-            placeholder="Nhập lại mật khẩu"
-            required
-          >
-        </div>
-        
-        <div v-if="errorMessage" class="error-message">
-          {{ errorMessage }}
-        </div>
-        
-        <div v-if="passwordError" class="error-message">
-          {{ passwordError }}
-        </div>
-        
-        <button type="submit" class="submit-btn" :disabled="isLoading">
-          <span v-if="isLoading">Đang tạo tài khoản...</span>
-          <span v-else>Đăng ký</span>
-        </button>
-        
-        <div class="divider">
-          <span>hoặc</span>
-        </div>
-        
-        <div class="social-buttons">
-          <button 
-            type="button" 
-            class="social-btn facebook-btn" 
-            @click="handleFacebookLogin"
-            :disabled="isLoading"
-          >
-            <img src="/src/assets/icons/facebook.png" alt="Facebook" width="20" height="20">
-            <span>Đăng ký với Facebook</span>
-          </button>
-          
-          <button 
-            type="button" 
-            class="social-btn google-btn" 
-            @click="handleGoogleLogin"
-            :disabled="isLoading"
-          >
-            <img src="/src/assets/icons/google.png" alt="Google" width="20" height="20">
-            <span>Đăng ký với Google</span>
-          </button>
-        </div>
-      </form>
-      
-      <!-- Success message cho forgot password -->
-      <div v-if="resetEmailSent" class="success-message">
-        Email đặt lại mật khẩu đã được gửi. Vui lòng kiểm tra hộp thư của bạn.
+      <!-- Video bên phải -->
+      <div class="intro-video">
+        <video autoplay muted loop playsinline>
+          <source src="/src/assets/videos/intro.mp4" type="video/mp4" />
+          Trình duyệt của bạn không hỗ trợ video.
+        </video>
       </div>
     </div>
   </div>
@@ -189,7 +146,7 @@ export default {
   name: 'LoginView',
   setup() {
     const router = useRouter()
-    const { 
+    const {
       loginWithEmail,
       signupWithEmail,
       loginWithFacebook,
@@ -197,27 +154,27 @@ export default {
       resetPassword,
       isLoading
     } = useAuth()
-    
+
     const activeTab = ref('login')
     const resetEmailSent = ref(false)
     const errorMessage = ref('')
-    
+
     const loginForm = ref({
       email: '',
       password: '',
       rememberMe: false
     })
-    
+
     const registerForm = ref({
       email: '',
       password: '',
       confirmPassword: ''
     })
-    
+
     // Kiểm tra password confirm
     const passwordError = computed(() => {
-      if (registerForm.value.confirmPassword && 
-          registerForm.value.password !== registerForm.value.confirmPassword) {
+      if (registerForm.value.confirmPassword &&
+        registerForm.value.password !== registerForm.value.confirmPassword) {
         return 'Mật khẩu xác nhận không khớp'
       }
       return ''
@@ -226,13 +183,13 @@ export default {
     // Xử lý đăng nhập
     const handleLogin = async () => {
       errorMessage.value = ''
-      
+
       try {
         const user = await loginWithEmail(
-          loginForm.value.email, 
+          loginForm.value.email,
           loginForm.value.password
         )
-        
+
         if (user) {
           router.push('/home')
         }
@@ -240,11 +197,11 @@ export default {
         errorMessage.value = error.message || 'Đăng nhập thất bại!'
       }
     }
-    
+
     // Xử lý đăng nhập Facebook
     const handleFacebookLogin = async () => {
       errorMessage.value = ''
-      
+
       try {
         const user = await loginWithFacebook()
         if (user) {
@@ -254,11 +211,11 @@ export default {
         errorMessage.value = error.message || 'Đăng nhập Facebook thất bại!'
       }
     }
-    
+
     // Xử lý đăng nhập Google
     const handleGoogleLogin = async () => {
       errorMessage.value = ''
-      
+
       try {
         const user = await loginWithGoogle()
         if (user) {
@@ -268,22 +225,22 @@ export default {
         errorMessage.value = error.message || 'Đăng nhập Google thất bại!'
       }
     }
-    
+
     // Xử lý đăng ký
     const handleRegister = async () => {
       errorMessage.value = ''
-      
+
       if (registerForm.value.password !== registerForm.value.confirmPassword) {
         return
       }
-      
+
       try {
         const user = await signupWithEmail(
           registerForm.value.email,
           registerForm.value.password,
           registerForm.value.confirmPassword
         )
-        
+
         if (user) {
           registerForm.value.email = ''
           registerForm.value.password = ''
@@ -296,14 +253,14 @@ export default {
         errorMessage.value = error.message || 'Đăng ký thất bại!'
       }
     }
-    
+
     // Xử lý quên mật khẩu
     const handleForgotPassword = async () => {
       if (!loginForm.value.email) {
         errorMessage.value = 'Vui lòng nhập email để đặt lại mật khẩu'
         return
       }
-      
+
       try {
         await resetPassword(loginForm.value.email)
         resetEmailSent.value = true
@@ -319,7 +276,7 @@ export default {
       errorMessage.value = ''
       resetEmailSent.value = false
     }
-    
+
     return {
       activeTab,
       resetEmailSent,
@@ -349,6 +306,14 @@ export default {
   padding: 1rem;
 }
 
+.login-wrapper {
+  display: flex;
+  align-items: stretch; /* để video cao bằng login-card */
+  gap: 2rem;
+  max-width: 100rem;
+  width: 100%;
+}
+
 .login-card {
   background: white;
   border-radius: 1rem;
@@ -357,6 +322,22 @@ export default {
   width: 100%;
   max-width: 28rem;
   min-height: 32rem;
+  flex: 0 0 28rem; /* giữ kích thước như cũ */
+}
+
+.intro-video {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.intro-video video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover; /* cho video lấp đầy vùng hiển thị */
+  border-radius: 1rem;
+  box-shadow: 0 1rem 3rem rgba(0, 0, 0, 0.175);
 }
 
 .login-header {
