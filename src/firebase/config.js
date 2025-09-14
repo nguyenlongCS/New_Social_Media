@@ -35,6 +35,6 @@ export const db = getFirestore(app, 'social-media-web-database')
 export const storage = getStorage(app, 'gs://social-media-web-storage')
 
 // Khởi tạo Realtime Database với database cụ thể: social-media-web-rtdb
-export const rtdb = getDatabase(app, 'https://fir-auth-cozy-default-rtdb.asia-southeast1.firebasedatabase.app')
+export const rtdb = getDatabase(app, 'https://social-media-web-rtdb.firebaseio.com')
 
 export default app
