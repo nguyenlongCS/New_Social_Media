@@ -1,8 +1,7 @@
 /*
-src/composables/useMessages.js - Composable quản lý tin nhắn với Firebase Realtime Database
+src/composables/useMessages.js - Fixed Version
+Composable quản lý tin nhắn với Firebase Realtime Database và import userInfoHelper
 Xử lý gửi/nhận tin nhắn realtime, quản lý cuộc hội thoại, upload media, tìm kiếm người dùng
-Sử dụng Firebase Realtime Database với cấu trúc /messages/messageId/
-Fixed: Sử dụng .val() thay vì .data() cho Realtime Database
 */
 import { ref } from 'vue'
 import { 
@@ -31,6 +30,8 @@ import {
   limit
 } from 'firebase/firestore'
 import { rtdb, storage, db } from '@/firebase/config'
+// Import userInfoHelper để lấy thông tin user từ Firestore
+import { userInfoHelper } from './useUserInfo'
 
 export function useMessages() {
   // State quản lý cuộc hội thoại và tin nhắn
@@ -79,7 +80,7 @@ export function useMessages() {
         
         conversationMap.clear()
         
-        // Duyệt qua tất cả tin nhắn - FIX: sử dụng .val() thay vì .data()
+        // Duyệt qua tất cả tin nhắn - sử dụng .val() cho Realtime Database
         snapshot.forEach((messageSnapshot) => {
           const messageData = messageSnapshot.val()
           
@@ -154,7 +155,7 @@ export function useMessages() {
         const messages = []
         
         if (snapshot.exists()) {
-          // FIX: sử dụng .val() thay vì .data()
+          // Sử dụng .val() cho Realtime Database
           snapshot.forEach((messageSnapshot) => {
             const messageData = messageSnapshot.val()
             
@@ -197,7 +198,7 @@ export function useMessages() {
       
       onValue(messagesRef, (snapshot) => {
         if (snapshot.exists()) {
-          // FIX: sử dụng .val() thay vì .data()
+          // Sử dụng .val() cho Realtime Database
           snapshot.forEach((messageSnapshot) => {
             const messageData = messageSnapshot.val()
             
@@ -296,7 +297,7 @@ export function useMessages() {
     }
   }
   
-  // Gửi tin nhắn mới
+  // Gửi tin nhắn mới với thông tin user từ Firestore
   const sendMessage = async (currentUser, receiverId, messageData) => {
     if (!currentUser || !receiverId) {
       throw new Error('Thông tin không hợp lệ')

@@ -1,5 +1,6 @@
 /*
-src/composables/useComments.js - Composable quản lý comments với debug logging
+src/composables/useComments.js - Fixed Version
+Composable quản lý comments với import userInfoHelper đúng cách
 Quản lý comments cho posts - collection "comments" với fields: Avatar, UserID, UserName, PostID, Created, Content
 */
 import { ref } from 'vue'
@@ -15,6 +16,8 @@ import {
   serverTimestamp
 } from 'firebase/firestore'
 import { db } from '@/firebase/config'
+// Import userInfoHelper để lấy thông tin user từ Firestore
+import { userInfoHelper } from './useUserInfo'
 
 export function useComments() {
   const isCommenting = ref(false)
@@ -95,7 +98,7 @@ export function useComments() {
     }
   }
 
-  // Thêm comment mới
+  // Thêm comment mới với thông tin user từ Firestore
   const addComment = async (user, postId, content) => {
     if (!user || !postId || !content?.trim()) {
       throw new Error('Thông tin comment không hợp lệ')

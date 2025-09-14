@@ -1,11 +1,14 @@
 /*
-src/composables/useCreatePost.js - Composable quản lý tạo bài viết mới
+src/composables/useCreatePost.js - Fixed Version
+Composable quản lý tạo bài viết mới với import userInfoHelper đúng cách
 Logic upload media lên Firebase Storage, tạo post trong Firestore collection "posts"
 */
 import { ref, reactive } from 'vue'
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore'
 import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage'
 import { db, storage } from '@/firebase/config'
+// Import userInfoHelper để lấy thông tin user từ Firestore
+import { userInfoHelper } from './useUserInfo'
 
 export function useCreatePost() {
   // Danh sách file được chọn với preview
@@ -120,8 +123,7 @@ export function useCreatePost() {
     return uploadedMedia
   }
 
-  // Tạo bài viết trong Firestore
-  // Tạo bài viết trong Firestore
+  // Tạo bài viết trong Firestore với thông tin user từ Firestore
   const createPost = async (user) => {
     if (!user || !user.uid) {
       errorMessage.value = 'Thông tin người dùng không hợp lệ'

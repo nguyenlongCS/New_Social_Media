@@ -61,7 +61,7 @@ export default {
     onMounted(() => {
       console.log('PostFeed mounted, posts length:', posts.value.length)
       if (posts.value.length === 0) {
-        loadPosts(10) // Load 10 posts đầu tiên
+        loadPosts(20) // Load 20 posts đầu tiên
       }
     })
     
@@ -103,7 +103,7 @@ export default {
     
     // Xử lý load thêm posts
     const handleLoadMore = async () => {
-      await loadMorePosts(10)
+      await loadMorePosts(20)
       
       // Load liked status cho posts mới
       if (user.value) {
