@@ -1,6 +1,7 @@
 /*
-src/router/index.js - Router với route /admin mới và guard kiểm tra quyền admin
-Thêm route /admin với meta requiresAdmin để kiểm tra quyền truy cập
+src/router/index.js - Router với admin guard cập nhật
+Cập nhật để kiểm tra role admin từ collection users thay vì collection admin
+Loại bỏ dependency vào collection admin
 */
 import { createRouter, createWebHistory } from 'vue-router'
 import HomeView from '../views/HomeView.vue'
@@ -81,12 +82,13 @@ const router = createRouter({
   ]
 })
 
-// Helper function để kiểm tra quyền admin
+// Helper function để kiểm tra quyền admin từ collection users
 const checkAdminPermission = async (userId) => {
   try {
     const { collection, query, where, getDocs } = await import('firebase/firestore')
     const { db } = await import('@/firebase/config')
     
+    // Query collection users để tìm user với UserID và kiểm tra Role
     const usersQuery = query(
       collection(db, 'users'),
       where('UserID', '==', userId)
@@ -96,12 +98,13 @@ const checkAdminPermission = async (userId) => {
     
     if (!snapshot.empty) {
       const userData = snapshot.docs[0].data()
+      // Kiểm tra field Role trong document user
       return userData.Role === 'admin'
     }
     
     return false
   } catch (error) {
-    console.error('Error checking admin permission:', error)
+    console.error('Error checking admin permission from users collection:', error)
     return false
   }
 }
@@ -133,7 +136,7 @@ router.beforeEach(async (to, from, next) => {
       return
     }
     
-    // Kiểm tra quyền admin cho route /admin
+    // Kiểm tra quyền admin cho route /admin từ collection users
     if (to.meta.requiresAdmin && user) {
       const isAdmin = await checkAdminPermission(user.uid)
       

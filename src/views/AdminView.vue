@@ -1,7 +1,7 @@
 <!--
-src/views/AdminView.vue - Trang quản trị admin đơn giản với 4 biểu đồ chính
-Hiển thị dashboard thống kê, 4 biểu đồ analytics và quản lý users/posts/comments
-Chỉ user có role admin mới được truy cập
+src/views/AdminView.vue - Trang quản trị admin với dữ liệu thực tế từ Firestore
+Cập nhật để sử dụng dữ liệu thực tế thay vì mock data
+Kiểm tra role admin từ collection users thay vì collection admin
 -->
 <template>
     <div class="admin-view">
@@ -30,12 +30,12 @@ Chỉ user có role admin mới được truy cập
             </div>
         </div>
 
-        <!-- Admin panel -->
+        <!-- Admin panel với dữ liệu thực tế từ Firestore -->
         <div v-else class="admin-container">
             <!-- Admin Header -->
             <div class="admin-header">
                 <h1 class="admin-title">Trang Quản Trị</h1>
-                <p class="admin-subtitle">Dashboard và quản lý hệ thống</p>
+                <p class="admin-subtitle">Dashboard và quản lý hệ thống với dữ liệu thực tế</p>
             </div>
 
             <!-- Tab Navigation -->
@@ -58,9 +58,9 @@ Chỉ user có role admin mới được truy cập
                 </button>
             </div>
 
-            <!-- Dashboard Tab -->
+            <!-- Dashboard Tab với thống kê thực tế -->
             <div v-if="activeTab === 'dashboard'" class="dashboard-tab">
-                <!-- Stats Overview -->
+                <!-- Stats Overview từ dữ liệu thực tế -->
                 <div class="stats-grid">
                     <div class="stat-card">
                         <div class="stat-icon">
@@ -103,38 +103,38 @@ Chỉ user có role admin mới được truy cập
                     </div>
                 </div>
 
-                <!-- Charts Grid -->
+                <!-- Charts Grid với dữ liệu thực tế -->
                 <div class="charts-grid">
-                    <!-- Tăng Trưởng Người Dùng - Line Chart -->
+                    <!-- Hoạt động 7 ngày qua từ dữ liệu thực tế -->
                     <div class="chart-container">
-                        <h3 class="chart-title">Tăng Trưởng Người Dùng</h3>
+                        <h3 class="chart-title">Hoạt Động 7 Ngày Qua (Dữ liệu thực tế)</h3>
                         <canvas ref="userGrowthChart" class="chart-canvas"></canvas>
                     </div>
 
-                    <!-- Phân Bố Bài Viết - Pie Chart -->
+                    <!-- Phân Bố Nội Dung từ posts thực tế -->
                     <div class="chart-container">
-                        <h3 class="chart-title">Phân Bố Bài Viết</h3>
+                        <h3 class="chart-title">Phân Bố Nội Dung (Dữ liệu thực tế)</h3>
                         <canvas ref="postDistributionChart" class="chart-canvas"></canvas>
                     </div>
 
-                    <!-- Tổng Quan Tương Tác - Bar Chart -->
+                    <!-- Tổng Quan Tương Tác từ thống kê thực tế -->
                     <div class="chart-container">
-                        <h3 class="chart-title">Tổng Quan Tương Tác</h3>
+                        <h3 class="chart-title">Tổng Quan Tương Tác (Dữ liệu thực tế)</h3>
                         <canvas ref="interactionChart" class="chart-canvas"></canvas>
                     </div>
 
-                    <!-- Người Dùng Hoạt Động Nhất - Horizontal Bar Chart -->
+                    <!-- Người Dùng Hoạt Động Nhất từ dữ liệu thực tế -->
                     <div class="chart-container">
-                        <h3 class="chart-title">Người Dùng Hoạt Động Nhất</h3>
+                        <h3 class="chart-title">Người Dùng Hoạt Động Nhất (Dữ liệu thực tế)</h3>
                         <canvas ref="activeUsersChart" class="chart-canvas"></canvas>
                     </div>
                 </div>
             </div>
 
-            <!-- Users Management Tab -->
+            <!-- Users Management Tab với dữ liệu thực tế -->
             <div v-if="activeTab === 'users'" class="users-tab">
                 <div class="tab-header">
-                    <h2>Quản lý người dùng</h2>
+                    <h2>Quản lý người dùng (Dữ liệu thực tế)</h2>
                     <button @click="loadAllUsers" :disabled="isLoadingUsers" class="refresh-btn">
                         <img src="@/assets/icons/setting.png" alt="Refresh" width="16" height="16">
                         Làm mới
@@ -143,7 +143,7 @@ Chỉ user có role admin mới được truy cập
 
                 <div v-if="isLoadingUsers" class="loading-section">
                     <div class="spinner"></div>
-                    <p>Đang tải danh sách người dùng...</p>
+                    <p>Đang tải danh sách người dùng từ Firestore...</p>
                 </div>
 
                 <div v-else class="table-container">
@@ -158,7 +158,7 @@ Chỉ user có role admin mới được truy cập
                             </tr>
                         </thead>
                         <tbody>
-                            <tr v-for="user in usersList" :key="user.id">
+                            <tr v-for="user in usersList" :key="user.docId">
                                 <td class="user-name">{{ user.userName }}</td>
                                 <td class="user-email">{{ user.email }}</td>
                                 <td>
@@ -183,10 +183,10 @@ Chỉ user có role admin mới được truy cập
                 </div>
             </div>
 
-            <!-- Posts Management Tab -->
+            <!-- Posts Management Tab với dữ liệu thực tế -->
             <div v-if="activeTab === 'posts'" class="posts-tab">
                 <div class="tab-header">
-                    <h2>Quản lý bài viết</h2>
+                    <h2>Quản lý bài viết (Dữ liệu thực tế)</h2>
                     <button @click="loadAllPosts" :disabled="isLoadingPosts" class="refresh-btn">
                         <img src="@/assets/icons/setting.png" alt="Refresh" width="16" height="16">
                         Làm mới
@@ -195,7 +195,7 @@ Chỉ user có role admin mới được truy cập
 
                 <div v-if="isLoadingPosts" class="loading-section">
                     <div class="spinner"></div>
-                    <p>Đang tải danh sách bài viết...</p>
+                    <p>Đang tải danh sách bài viết từ Firestore...</p>
                 </div>
 
                 <div v-else class="table-container">
@@ -210,7 +210,7 @@ Chỉ user có role admin mới được truy cập
                             </tr>
                         </thead>
                         <tbody>
-                            <tr v-for="post in postsList" :key="post.id">
+                            <tr v-for="post in postsList" :key="post.docId">
                                 <td class="post-title">{{ post.title }}</td>
                                 <td>{{ post.author }}</td>
                                 <td class="stats-cell">{{ post.likes }}</td>
@@ -229,10 +229,10 @@ Chỉ user có role admin mới được truy cập
                 </div>
             </div>
 
-            <!-- Comments Management Tab -->
+            <!-- Comments Management Tab với dữ liệu thực tế -->
             <div v-if="activeTab === 'comments'" class="comments-tab">
                 <div class="tab-header">
-                    <h2>Quản lý bình luận</h2>
+                    <h2>Quản lý bình luận (Dữ liệu thực tế)</h2>
                     <button @click="loadAllComments" :disabled="isLoadingComments" class="refresh-btn">
                         <img src="@/assets/icons/setting.png" alt="Refresh" width="16" height="16">
                         Làm mới
@@ -241,7 +241,7 @@ Chỉ user có role admin mới được truy cập
 
                 <div v-if="isLoadingComments" class="loading-section">
                     <div class="spinner"></div>
-                    <p>Đang tải danh sách bình luận...</p>
+                    <p>Đang tải danh sách bình luận từ Firestore...</p>
                 </div>
 
                 <div v-else class="table-container">
@@ -255,7 +255,7 @@ Chỉ user có role admin mới được truy cập
                             </tr>
                         </thead>
                         <tbody>
-                            <tr v-for="comment in commentsList" :key="comment.id">
+                            <tr v-for="comment in commentsList" :key="comment.docId">
                                 <td class="comment-content">{{ comment.content }}</td>
                                 <td>{{ comment.author }}</td>
                                 <td class="date-cell">{{ formatTimestamp(comment.created) }}</td>
@@ -293,21 +293,22 @@ export default {
   setup() {
     const activeTab = ref('dashboard')
 
-    // Chart refs
+    // Chart refs cho biểu đồ với dữ liệu thực tế
     const userGrowthChart = ref(null)
     const postDistributionChart = ref(null)
     const interactionChart = ref(null)
     const activeUsersChart = ref(null)
     const chartInstances = ref([])
 
-    // Auth user
+    // Auth user với kiểm tra role từ collection users
     const { user, isAuthLoading, waitForUserWithTimeout } = useAuthUser()
 
-    // Admin composable
+    // Admin composable với dữ liệu thực tế từ Firestore
     const {
       isAdmin,
       isCheckingAdmin,
       dashboardStats,
+      chartData,
       usersList,
       postsList,
       commentsList,
@@ -317,7 +318,7 @@ export default {
       isDeleting,
       errorMessage,
       checkAdminRole,
-      loadDashboardStats,
+      loadDashboardData,
       loadAllUsers,
       loadAllPosts,
       loadAllComments,
@@ -332,7 +333,7 @@ export default {
     // Lấy proxy để dùng globalProperties.$Chart
     const { proxy } = getCurrentInstance()
 
-    // Hàm setupCharts
+    // Setup Charts với dữ liệu thực tế từ Firestore
     const setupCharts = async () => {
       await nextTick()
 
@@ -341,45 +342,59 @@ export default {
       chartInstances.value = []
 
       try {
-        // 1. Line Chart
-        if (userGrowthChart.value) {
+        // 1. Line Chart - Hoạt động 7 ngày qua với dữ liệu thực tế
+        if (userGrowthChart.value && chartData.value.labels) {
           const ctx1 = userGrowthChart.value.getContext('2d')
           const chart1 = new proxy.$Chart(ctx1, {
             type: 'line',
             data: {
-              labels: ['Tháng 1', 'Tháng 2', 'Tháng 3', 'Tháng 4', 'Tháng 5', 'Tháng 6'],
-              datasets: [{
-                label: 'Người dùng mới',
-                data: [12, 19, 25, 32, 45, Math.floor(dashboardStats.value.totalUsers * 0.3)],
-                borderColor: '#2563eb',
-                backgroundColor: 'rgba(37, 99, 235, 0.1)',
-                tension: 0.4,
-                fill: true
-              }]
+              labels: chartData.value.labels,
+              datasets: [
+                {
+                  label: 'Bài viết (thực tế)',
+                  data: chartData.value.postsOverTime,
+                  borderColor: '#2563eb',
+                  backgroundColor: 'rgba(37, 99, 235, 0.1)',
+                  tension: 0.4,
+                  fill: false
+                },
+                {
+                  label: 'Likes (thực tế)',
+                  data: chartData.value.likesOverTime,
+                  borderColor: '#dc2626',
+                  backgroundColor: 'rgba(220, 38, 38, 0.1)',
+                  tension: 0.4,
+                  fill: false
+                },
+                {
+                  label: 'Comments (thực tế)',
+                  data: chartData.value.commentsOverTime,
+                  borderColor: '#16a34a',
+                  backgroundColor: 'rgba(22, 163, 74, 0.1)',
+                  tension: 0.4,
+                  fill: false
+                }
+              ]
             },
             options: {
               responsive: true,
               maintainAspectRatio: false,
-              plugins: { legend: { display: false } },
+              plugins: { legend: { position: 'top' } },
               scales: { y: { beginAtZero: true } }
             }
           })
           chartInstances.value.push(chart1)
         }
 
-        // 2. Pie Chart
-        if (postDistributionChart.value) {
+        // 2. Pie Chart - Phân bố nội dung từ posts thực tế
+        if (postDistributionChart.value && chartData.value.contentTypesData) {
           const ctx2 = postDistributionChart.value.getContext('2d')
           const chart2 = new proxy.$Chart(ctx2, {
             type: 'pie',
             data: {
-              labels: ['Có hình ảnh', 'Có video', 'Chỉ văn bản'],
+              labels: chartData.value.contentTypesData.map(item => item.type),
               datasets: [{
-                data: [
-                  Math.floor(dashboardStats.value.totalPosts * 0.6),
-                  Math.floor(dashboardStats.value.totalPosts * 0.25),
-                  Math.floor(dashboardStats.value.totalPosts * 0.15)
-                ],
+                data: chartData.value.contentTypesData.map(item => item.count),
                 backgroundColor: ['#2563eb', '#dc2626', '#16a34a'],
                 borderWidth: 2,
                 borderColor: '#ffffff'
@@ -394,20 +409,20 @@ export default {
           chartInstances.value.push(chart2)
         }
 
-        // 3. Bar Chart
+        // 3. Bar Chart - Tổng quan tương tác từ thống kê thực tế
         if (interactionChart.value) {
           const ctx3 = interactionChart.value.getContext('2d')
           const chart3 = new proxy.$Chart(ctx3, {
             type: 'bar',
             data: {
-              labels: ['Bài viết', 'Likes', 'Comments', 'Shares'],
+              labels: ['Người dùng', 'Bài viết', 'Likes', 'Comments'],
               datasets: [{
-                label: 'Tổng số',
+                label: 'Tổng số (thực tế)',
                 data: [
+                  dashboardStats.value.totalUsers,
                   dashboardStats.value.totalPosts,
                   dashboardStats.value.totalLikes,
-                  dashboardStats.value.totalComments,
-                  Math.floor(dashboardStats.value.totalPosts * 0.3)
+                  dashboardStats.value.totalComments
                 ],
                 backgroundColor: ['#3b82f6', '#ef4444', '#10b981', '#f59e0b'],
                 borderRadius: 4
@@ -423,16 +438,16 @@ export default {
           chartInstances.value.push(chart3)
         }
 
-        // 4. Horizontal Bar Chart
-        if (activeUsersChart.value) {
+        // 4. Horizontal Bar Chart - Top users với dữ liệu thực tế
+        if (activeUsersChart.value && chartData.value.topUsersData) {
           const ctx4 = activeUsersChart.value.getContext('2d')
           const chart4 = new proxy.$Chart(ctx4, {
             type: 'bar',
             data: {
-              labels: ['User A', 'User B', 'User C', 'User D', 'User E'],
+              labels: chartData.value.topUsersData.map(user => user.userName),
               datasets: [{
-                label: 'Điểm hoạt động',
-                data: [85, 72, 68, 55, 42],
+                label: 'Số bài viết (thực tế)',
+                data: chartData.value.topUsersData.map(user => user.postsCount),
                 backgroundColor: '#8b5cf6',
                 borderRadius: 4
               }]
@@ -448,16 +463,75 @@ export default {
           chartInstances.value.push(chart4)
         }
       } catch (error) {
-        console.warn('Chart.js chưa được tải:', error)
+        console.warn('Chart.js setup error:', error)
       }
     }
 
-    // Chuyển tab
+    // Xử lý promote user - cập nhật role trong collection users
+    const handlePromoteUser = async (user) => {
+      const confirmPromote = confirm(`Bạn có chắc muốn promote ${user.userName} lên Admin?`)
+      if (!confirmPromote) return
+
+      try {
+        await changeUserRole(user.docId, 'admin')
+        alert(`Đã promote ${user.userName} lên Admin!`)
+        
+        // Reload users list để cập nhật role
+        await loadAllUsers()
+      } catch (error) {
+        console.error('Error promoting user:', error)
+        alert(error.message || 'Không thể promote user')
+      }
+    }
+
+    // Xử lý xóa user từ collection users
+    const handleDeleteUser = async (user) => {
+      const confirmDelete = confirm(`Bạn có chắc muốn xóa user ${user.userName}? Hành động này không thể hoàn tác!`)
+      if (!confirmDelete) return
+
+      try {
+        await deleteUser(user.docId)
+        alert(`Đã xóa user ${user.userName}!`)
+      } catch (error) {
+        console.error('Error deleting user:', error)
+        alert(error.message || 'Không thể xóa user')
+      }
+    }
+
+    // Xử lý xóa post và related data
+    const handleDeletePost = async (post) => {
+      const confirmDelete = confirm(`Bạn có chắc muốn xóa bài viết "${post.title}"? Hành động này không thể hoàn tác!`)
+      if (!confirmDelete) return
+
+      try {
+        await deletePost(post.docId)
+        alert(`Đã xóa bài viết "${post.title}"!`)
+      } catch (error) {
+        console.error('Error deleting post:', error)
+        alert(error.message || 'Không thể xóa bài viết')
+      }
+    }
+
+    // Xử lý xóa comment
+    const handleDeleteComment = async (comment) => {
+      const confirmDelete = confirm(`Bạn có chắc muốn xóa bình luận này? Hành động này không thể hoàn tác!`)
+      if (!confirmDelete) return
+
+      try {
+        await deleteComment(comment.docId)
+        alert('Đã xóa bình luận!')
+      } catch (error) {
+        console.error('Error deleting comment:', error)
+        alert(error.message || 'Không thể xóa bình luận')
+      }
+    }
+
+    // Chuyển tab và load dữ liệu thực tế tương ứng
     const switchTab = async (tab) => {
       activeTab.value = tab
       switch (tab) {
         case 'dashboard':
-          await loadDashboardStats()
+          await loadDashboardData()
           await nextTick()
           setupCharts()
           break
@@ -473,14 +547,16 @@ export default {
       }
     }
 
-    // Lifecycle
+    // Lifecycle - load dữ liệu thực tế khi mount
     onMounted(async () => {
       try {
         const currentUser = await waitForUserWithTimeout(5000)
         if (currentUser?.uid) {
+          // Kiểm tra role admin từ collection users
           const isUserAdmin = await checkAdminRole(currentUser.uid)
           if (isUserAdmin) {
-            await loadDashboardStats()
+            // Load dữ liệu thực tế cho dashboard
+            await loadDashboardData()
             await nextTick()
             setupCharts()
           }
@@ -495,7 +571,6 @@ export default {
       chartInstances.value = []
     })
 
-    // return ra template
     return {
       activeTab,
       userGrowthChart,
@@ -507,6 +582,7 @@ export default {
       isAdmin,
       isCheckingAdmin,
       dashboardStats,
+      chartData,
       usersList,
       postsList,
       commentsList,
@@ -519,6 +595,10 @@ export default {
       loadAllUsers,
       loadAllPosts,
       loadAllComments,
+      handlePromoteUser,
+      handleDeleteUser,
+      handleDeletePost,
+      handleDeleteComment,
       formatNumber,
       formatTimestamp
     }
@@ -526,8 +606,8 @@ export default {
 }
 </script>
 
-
 <style scoped>
+/* Giữ nguyên tất cả CSS styles hiện tại - không thay đổi giao diện */
 .admin-view {
     min-height: 100vh;
     background: #f5f5f5;
@@ -640,7 +720,6 @@ export default {
     color: #374151;
 }
 
-/* Dashboard Styles */
 .stats-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
@@ -708,7 +787,6 @@ export default {
     height: 300px !important;
 }
 
-/* Table Styles */
 .tab-header {
     display: flex;
     justify-content: space-between;
@@ -768,13 +846,8 @@ export default {
 }
 
 @keyframes spin {
-    0% {
-        transform: rotate(0deg);
-    }
-
-    100% {
-        transform: rotate(360deg);
-    }
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
 }
 
 .loading-section p {
@@ -917,7 +990,6 @@ export default {
     border: 1px solid #fecaca;
 }
 
-/* Responsive */
 @media (max-width: 1200px) {
     .charts-grid {
         grid-template-columns: 1fr;

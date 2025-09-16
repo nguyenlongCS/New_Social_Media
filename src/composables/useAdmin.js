@@ -1,7 +1,7 @@
 /*
-src/composables/useAdmin.js - Composable quản lý chức năng admin
-Xử lý phân quyền admin, thống kê dữ liệu, quản lý users/posts/comments
-Tích hợp Chart.js cho dashboard analytics
+src/composables/useAdmin.js - Composable quản lý chức năng admin với permissions fix
+Fixed: Sử dụng user document ID thay vì UserID cho delete operations
+Cập nhật logic delete để sử dụng đúng document structure
 */
 import { ref, computed } from 'vue'
 import { 
@@ -14,27 +14,28 @@ import {
   doc,
   updateDoc,
   where,
-  Timestamp
+  Timestamp,
+  startAfter
 } from 'firebase/firestore'
 import { db } from '@/firebase/config'
 
 export function useAdmin() {
-  // States cho phân quyền
+  // States cho phân quyền - kiểm tra từ collection users
   const isAdmin = ref(false)
   const isCheckingAdmin = ref(false)
   
-  // States cho dashboard
+  // States cho dashboard với dữ liệu thực tế
   const dashboardStats = ref({
     totalUsers: 0,
     totalPosts: 0,
     totalLikes: 0,
     totalComments: 0
   })
-  const topPosts = ref([])
-  const recentUsers = ref([])
+  const topPosts = ref([]) // Top posts theo likes thực tế
+  const recentUsers = ref([]) // Users mới đăng ký thực tế
   const isLoadingStats = ref(false)
   
-  // States cho quản lý dữ liệu
+  // States cho quản lý dữ liệu thực tế
   const usersList = ref([])
   const postsList = ref([])
   const commentsList = ref([])
@@ -43,7 +44,7 @@ export function useAdmin() {
   const isLoadingComments = ref(false)
   const isDeleting = ref(false)
   
-  // States cho analytics
+  // States cho analytics với dữ liệu thực tế từ Firestore
   const chartData = ref({
     postsOverTime: [],
     likesOverTime: [],
@@ -55,14 +56,13 @@ export function useAdmin() {
   
   const errorMessage = ref('')
   
-  // Kiểm tra quyền admin của user
+  // Kiểm tra quyền admin từ collection users (field Role)
   const checkAdminRole = async (userId) => {
     if (!userId) return false
     
     isCheckingAdmin.value = true
     
     try {
-      // Lấy thông tin user từ collection users
       const usersQuery = query(
         collection(db, 'users'),
         where('UserID', '==', userId)
@@ -88,12 +88,12 @@ export function useAdmin() {
     }
   }
   
-  // Load thống kê tổng quan cho dashboard
+  // Load thống kê tổng quan thực tế từ các collections
   const loadDashboardStats = async () => {
     isLoadingStats.value = true
     
     try {
-      // Load song song tất cả thống kê
+      // Đếm số lượng documents thực tế từ từng collection
       const [usersSnapshot, postsSnapshot, likesSnapshot, commentsSnapshot] = await Promise.all([
         getDocs(collection(db, 'users')),
         getDocs(collection(db, 'posts')),
@@ -116,7 +116,7 @@ export function useAdmin() {
     }
   }
   
-  // Load top 10 bài viết có lượt thích cao nhất
+  // Load top 10 bài viết có lượt thích cao nhất (dữ liệu thực tế)
   const loadTopPosts = async () => {
     try {
       const postsQuery = query(
@@ -128,11 +128,10 @@ export function useAdmin() {
       const snapshot = await getDocs(postsQuery)
       const posts = []
       
-      // Đếm likes cho từng post
+      // Đếm likes thực tế cho từng post
       for (const postDoc of snapshot.docs) {
         const postData = postDoc.data()
         
-        // Đếm likes từ collection likes
         const likesQuery = query(
           collection(db, 'likes'),
           where('PostID', '==', postDoc.id)
@@ -149,7 +148,7 @@ export function useAdmin() {
         })
       }
       
-      // Sắp xếp theo likes và lấy top 10
+      // Sắp xếp theo likes thực tế và lấy top 10
       posts.sort((a, b) => b.likes - a.likes)
       topPosts.value = posts.slice(0, 10)
       
@@ -158,7 +157,7 @@ export function useAdmin() {
     }
   }
   
-  // Load 10 người dùng mới nhất
+  // Load 10 người dùng mới đăng ký gần đây nhất (dữ liệu thực tế)
   const loadRecentUsers = async () => {
     try {
       const usersQuery = query(
@@ -191,7 +190,7 @@ export function useAdmin() {
     }
   }
   
-  // Load tất cả users cho quản lý
+  // Load tất cả users thực tế cho quản lý với document ID chính xác
   const loadAllUsers = async () => {
     isLoadingUsers.value = true
     
@@ -207,8 +206,9 @@ export function useAdmin() {
       snapshot.forEach((doc) => {
         const userData = doc.data()
         users.push({
-          id: doc.id,
-          userId: userData.UserID,
+          docId: doc.id, // Document ID để xóa - này là UserID trong Firestore
+          firestoreDocId: doc.id, // Backup document ID
+          userId: userData.UserID, // Auth UID - có thể khác với document ID
           userName: userData.UserName || 'Anonymous',
           email: userData.Email || '',
           avatar: userData.Avatar || '',
@@ -229,7 +229,7 @@ export function useAdmin() {
     }
   }
   
-  // Load tất cả posts cho quản lý
+  // Load tất cả posts thực tế cho quản lý
   const loadAllPosts = async () => {
     isLoadingPosts.value = true
     
@@ -242,18 +242,18 @@ export function useAdmin() {
       const snapshot = await getDocs(postsQuery)
       const posts = []
       
-      // Load posts với likes count
+      // Load posts với likes và comments thực tế
       for (const postDoc of snapshot.docs) {
         const postData = postDoc.data()
         
-        // Đếm likes
+        // Đếm likes thực tế
         const likesQuery = query(
           collection(db, 'likes'),
           where('PostID', '==', postDoc.id)
         )
         const likesSnapshot = await getDocs(likesQuery)
         
-        // Đếm comments
+        // Đếm comments thực tế
         const commentsQuery = query(
           collection(db, 'comments'),
           where('PostID', '==', postDoc.id)
@@ -261,7 +261,7 @@ export function useAdmin() {
         const commentsSnapshot = await getDocs(commentsQuery)
         
         posts.push({
-          id: postDoc.id,
+          docId: postDoc.id, // Document ID để xóa
           title: postData.Caption || 'Untitled',
           content: postData.Content || '',
           author: postData.UserName || 'Anonymous',
@@ -284,7 +284,7 @@ export function useAdmin() {
     }
   }
   
-  // Load tất cả comments cho quản lý
+  // Load tất cả comments thực tế cho quản lý
   const loadAllComments = async () => {
     isLoadingComments.value = true
     
@@ -300,7 +300,7 @@ export function useAdmin() {
       snapshot.forEach((doc) => {
         const commentData = doc.data()
         comments.push({
-          id: doc.id,
+          docId: doc.id, // Document ID để xóa
           content: commentData.Content || '',
           author: commentData.UserName || 'Anonymous',
           authorId: commentData.UserID || '',
@@ -320,17 +320,17 @@ export function useAdmin() {
     }
   }
   
-  // Load dữ liệu cho biểu đồ analytics
+  // Load dữ liệu thực tế cho biểu đồ analytics
   const loadAnalyticsData = async () => {
     isLoadingAnalytics.value = true
     
     try {
-      // Load dữ liệu theo thời gian (7 ngày gần nhất)
       const last7Days = []
       const postsOverTime = []
       const likesOverTime = []
       const commentsOverTime = []
       
+      // Tạo dữ liệu cho 7 ngày gần đây
       for (let i = 6; i >= 0; i--) {
         const date = new Date()
         date.setDate(date.getDate() - i)
@@ -339,7 +339,7 @@ export function useAdmin() {
         
         last7Days.push(dayStart.toLocaleDateString('vi-VN'))
         
-        // Đếm posts trong ngày
+        // Đếm posts được tạo trong ngày
         const postsQuery = query(
           collection(db, 'posts'),
           where('Created', '>=', Timestamp.fromDate(dayStart)),
@@ -367,19 +367,8 @@ export function useAdmin() {
         commentsOverTime.push(commentsSnapshot.size)
       }
       
-      // Tạo dữ liệu cho top users chart
-      const topUsersData = recentUsers.value.slice(0, 5).map(user => ({
-        userName: user.userName,
-        postsCount: Math.floor(Math.random() * 20) + 1, // Mock data
-        likesCount: Math.floor(Math.random() * 50) + 1  // Mock data
-      }))
-      
-      // Tạo dữ liệu cho content types (Mock data)
-      const contentTypesData = [
-        { type: 'Bài viết có ảnh', count: Math.floor(dashboardStats.value.totalPosts * 0.6) },
-        { type: 'Bài viết có video', count: Math.floor(dashboardStats.value.totalPosts * 0.3) },
-        { type: 'Bài viết text', count: Math.floor(dashboardStats.value.totalPosts * 0.1) }
-      ]
+      const topUsersData = await loadTopUsersForChart()
+      const contentTypesData = await loadContentTypesData()
       
       chartData.value = {
         labels: last7Days,
@@ -398,49 +387,152 @@ export function useAdmin() {
     }
   }
   
-  // Xóa user (chỉ admin)
-  const deleteUser = async (userId) => {
+  // Load top users thực tế cho chart
+  const loadTopUsersForChart = async () => {
+    try {
+      const usersWithPosts = []
+      
+      // Lấy top 5 users từ recentUsers hoặc tất cả users
+      const usersToCheck = recentUsers.value.length > 0 ? recentUsers.value.slice(0, 5) : []
+      
+      for (const user of usersToCheck) {
+        // Đếm posts thực tế của user
+        const userPostsQuery = query(
+          collection(db, 'posts'),
+          where('UserID', '==', user.userId)
+        )
+        const userPostsSnapshot = await getDocs(userPostsQuery)
+        const postsCount = userPostsSnapshot.size
+        
+        // Đếm tổng likes cho tất cả posts của user
+        let totalLikes = 0
+        for (const postDoc of userPostsSnapshot.docs) {
+          const likesQuery = query(
+            collection(db, 'likes'),
+            where('PostID', '==', postDoc.id)
+          )
+          const likesSnapshot = await getDocs(likesQuery)
+          totalLikes += likesSnapshot.size
+        }
+        
+        usersWithPosts.push({
+          userName: user.userName,
+          postsCount: postsCount,
+          likesCount: totalLikes
+        })
+      }
+      
+      // Sắp xếp theo số posts thực tế
+      usersWithPosts.sort((a, b) => b.postsCount - a.postsCount)
+      
+      return usersWithPosts
+      
+    } catch (error) {
+      console.error('Error loading top users for chart:', error)
+      return []
+    }
+  }
+  
+  // Load phân loại content types thực tế
+  const loadContentTypesData = async () => {
+    try {
+      const postsQuery = query(collection(db, 'posts'))
+      const snapshot = await getDocs(postsQuery)
+      
+      let imagePostsCount = 0
+      let videoPostsCount = 0
+      let textPostsCount = 0
+      
+      snapshot.forEach((doc) => {
+        const postData = doc.data()
+        const mediaCount = postData.mediaCount || 0
+        const mediaItems = postData.mediaItems || []
+        
+        if (mediaCount > 0 && mediaItems.length > 0) {
+          const firstMedia = mediaItems[0]
+          if (firstMedia?.type?.startsWith('image/')) {
+            imagePostsCount++
+          } else if (firstMedia?.type?.startsWith('video/')) {
+            videoPostsCount++
+          } else {
+            textPostsCount++
+          }
+        } else if (postData.MediaUrl) {
+          imagePostsCount++
+        } else {
+          textPostsCount++
+        }
+      })
+      
+      return [
+        { type: 'Bài viết có ảnh', count: imagePostsCount },
+        { type: 'Bài viết có video', count: videoPostsCount },
+        { type: 'Bài viết text', count: textPostsCount }
+      ]
+      
+    } catch (error) {
+      console.error('Error loading content types data:', error)
+      return []
+    }
+  }
+  
+  // Fixed: Xóa user - sử dụng document ID là UserID trong Firestore
+  const deleteUser = async (userDocId) => {
     if (!isAdmin.value) {
       throw new Error('Không có quyền thực hiện thao tác này')
+    }
+    
+    if (!userDocId) {
+      throw new Error('Không tìm thấy thông tin user')
     }
     
     isDeleting.value = true
     
     try {
-      // Xóa user từ collection users
-      const userRef = doc(db, 'users', userId)
+      console.log('Admin deleting user with docId:', userDocId)
+      
+      // Trong collection users, document ID chính là UserID
+      // Xóa user document bằng document ID
+      const userRef = doc(db, 'users', userDocId)
       await deleteDoc(userRef)
       
       // Xóa user khỏi danh sách local
-      usersList.value = usersList.value.filter(user => user.id !== userId)
+      usersList.value = usersList.value.filter(user => user.docId !== userDocId)
       
+      console.log('User deleted successfully')
       return true
       
     } catch (error) {
       console.error('Error deleting user:', error)
-      throw new Error('Không thể xóa user')
+      throw new Error('Không thể xóa user: ' + error.message)
     } finally {
       isDeleting.value = false
     }
   }
   
-  // Xóa post (chỉ admin)
-  const deletePost = async (postId) => {
+  // Fixed: Xóa post và tất cả related data
+  const deletePost = async (postDocId) => {
     if (!isAdmin.value) {
       throw new Error('Không có quyền thực hiện thao tác này')
+    }
+    
+    if (!postDocId) {
+      throw new Error('Không tìm thấy thông tin post')
     }
     
     isDeleting.value = true
     
     try {
-      // Xóa post
-      const postRef = doc(db, 'posts', postId)
+      console.log('Admin deleting post with docId:', postDocId)
+      
+      // Xóa post document
+      const postRef = doc(db, 'posts', postDocId)
       await deleteDoc(postRef)
       
       // Xóa tất cả likes của post này
       const likesQuery = query(
         collection(db, 'likes'),
-        where('PostID', '==', postId)
+        where('PostID', '==', postDocId)
       )
       const likesSnapshot = await getDocs(likesQuery)
       
@@ -452,7 +544,7 @@ export function useAdmin() {
       // Xóa tất cả comments của post này
       const commentsQuery = query(
         collection(db, 'comments'),
-        where('PostID', '==', postId)
+        where('PostID', '==', postDocId)
       )
       const commentsSnapshot = await getDocs(commentsQuery)
       
@@ -463,71 +555,102 @@ export function useAdmin() {
       await Promise.all(deletePromises)
       
       // Xóa post khỏi danh sách local
-      postsList.value = postsList.value.filter(post => post.id !== postId)
+      postsList.value = postsList.value.filter(post => post.docId !== postDocId)
       
+      console.log('Post and related data deleted successfully')
       return true
       
     } catch (error) {
       console.error('Error deleting post:', error)
-      throw new Error('Không thể xóa post')
+      throw new Error('Không thể xóa post: ' + error.message)
     } finally {
       isDeleting.value = false
     }
   }
   
-  // Xóa comment (chỉ admin)
-  const deleteComment = async (commentId) => {
+  // Fixed: Xóa comment
+  const deleteComment = async (commentDocId) => {
     if (!isAdmin.value) {
       throw new Error('Không có quyền thực hiện thao tác này')
+    }
+    
+    if (!commentDocId) {
+      throw new Error('Không tìm thấy thông tin comment')
     }
     
     isDeleting.value = true
     
     try {
-      const commentRef = doc(db, 'comments', commentId)
+      console.log('Admin deleting comment with docId:', commentDocId)
+      
+      // Xóa comment document từ Firestore
+      const commentRef = doc(db, 'comments', commentDocId)
       await deleteDoc(commentRef)
       
       // Xóa comment khỏi danh sách local
-      commentsList.value = commentsList.value.filter(comment => comment.id !== commentId)
+      commentsList.value = commentsList.value.filter(comment => comment.docId !== commentDocId)
       
+      console.log('Comment deleted successfully')
       return true
       
     } catch (error) {
       console.error('Error deleting comment:', error)
-      throw new Error('Không thể xóa comment')
+      throw new Error('Không thể xóa comment: ' + error.message)
     } finally {
       isDeleting.value = false
     }
   }
   
-  // Thay đổi role user (promote/demote admin)
-  const changeUserRole = async (userId, newRole) => {
+  // Fixed: Thay đổi role user - admin có thể update role của bất kỳ user nào
+  const changeUserRole = async (userDocId, newRole) => {
     if (!isAdmin.value) {
       throw new Error('Không có quyền thực hiện thao tác này')
     }
     
+    if (!userDocId) {
+      throw new Error('Không tìm thấy thông tin user')
+    }
+    
+    if (!newRole) {
+      throw new Error('Role mới không hợp lệ')
+    }
+    
     try {
-      const userRef = doc(db, 'users', userId)
+      console.log('Admin changing user role, docId:', userDocId, 'newRole:', newRole)
+      
+      // Cập nhật role trong collection users - admin có quyền update bất kỳ user document nào
+      const userRef = doc(db, 'users', userDocId)
       await updateDoc(userRef, {
         Role: newRole,
-        UpdateAt: new Date()
+        UpdatedAt: new Date(), // Sửa typo UpdateAt thành UpdatedAt
+        UpdatedBy: 'admin' // Đánh dấu được cập nhật bởi admin
       })
       
       // Cập nhật trong danh sách local
-      const userIndex = usersList.value.findIndex(user => user.id === userId)
+      const userIndex = usersList.value.findIndex(user => user.docId === userDocId)
       if (userIndex !== -1) {
         usersList.value[userIndex].role = newRole
       }
       
+      console.log('User role changed successfully from admin')
       return true
       
     } catch (error) {
       console.error('Error changing user role:', error)
-      throw new Error('Không thể thay đổi role user')
+      
+      // Log chi tiết lỗi để debug
+      if (error.code === 'permission-denied') {
+        console.error('Permission denied - Admin function may not be working properly')
+        console.error('Current admin status:', isAdmin.value)
+        console.error('UserDocId:', userDocId)
+        console.error('New role:', newRole)
+      }
+      
+      throw new Error('Không thể thay đổi role user: ' + error.message)
     }
   }
   
-  // Load tất cả dữ liệu cho dashboard
+  // Load tất cả dữ liệu thực tế cho dashboard
   const loadDashboardData = async () => {
     await Promise.all([
       loadDashboardStats(),
@@ -535,11 +658,10 @@ export function useAdmin() {
       loadRecentUsers()
     ])
     
-    // Load analytics data sau khi có basic stats
     await loadAnalyticsData()
   }
   
-  // Format số lượng để hiển thị
+  // Format số lượng để hiển thị (giữ nguyên logic cũ)
   const formatNumber = (num) => {
     if (num >= 1000000) {
       return (num / 1000000).toFixed(1) + 'M'
@@ -550,7 +672,7 @@ export function useAdmin() {
     return num.toString()
   }
   
-  // Format timestamp
+  // Format timestamp (giữ nguyên logic cũ)
   const formatTimestamp = (timestamp) => {
     if (!timestamp) return 'N/A'
     
@@ -562,7 +684,7 @@ export function useAdmin() {
     }
   }
   
-  // Reset tất cả state
+  // Reset tất cả state (giữ nguyên logic cũ)
   const resetAdminState = () => {
     isAdmin.value = false
     dashboardStats.value = { totalUsers: 0, totalPosts: 0, totalLikes: 0, totalComments: 0 }
