@@ -1,6 +1,7 @@
 <!--
-src/App.vue - Fixed Version
+src/App.vue - Fixed Version với Touch
 Root component với useAuthUser thay vì useAuth để quản lý auth state nhất quán
+Tích hợp Touch component hiển thị trên tất cả trang trừ /login
 -->
 <template>
   <div id="app">
@@ -12,15 +13,22 @@ Root component với useAuthUser thay vì useAuth để quản lý auth state nh
     </div>
     
     <router-view v-else />
+    
+    <!-- AssistiveTouch component - hiển thị trên tất cả trang trừ /login -->
+    <AssistiveTouch />
   </div>
 </template>
 
 <script>
 import { onMounted, onUnmounted } from 'vue'
 import { useAuthUser } from './composables/useAuthUser'
+import AssistiveTouch from './components/Touch.vue'
 
 export default {
   name: 'App',
+  components: {
+    AssistiveTouch
+  },
   setup() {
     // Sử dụng useAuthUser thay vì useAuth để quản lý auth state nhất quán
     const { isAuthLoading, initAuthListener, cleanup } = useAuthUser()
