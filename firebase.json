@@ -5,6 +5,16 @@
     "rules": "firestore.rules",
     "indexes": "firestore.indexes.json"
   },
+  "storage": {
+    "rules": "storage.rules",
+    "bucket": "social-media-web-storage"
+  },
+  "database": {
+    "rules": "database.rules.json",
+    "targets": {
+      "social-media-web-rtdb": "database.rules.json"
+    }
+  },
   "functions": [
     {
       "source": "functions",
@@ -18,12 +28,6 @@
       ]
     }
   ],
-  "storage": {
-    "rules": "storage.rules"
-  },
-  "database": {
-    "rules": "database.rules.json"
-  },
   "hosting": [
     {
       "site": "social-media-web-hosting",

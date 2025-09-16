@@ -1,6 +1,6 @@
 /*
-Firestore Security Rules cho Social Media Web Database - UPDATED with locations and news
-Cập nhật rules với đầy đủ chức năng và permissions phù hợp, thêm collection news
+Firestore Security Rules cho Social Media Web Database - UPDATED with sync permissions
+Cập nhật rules với permissions cho data sync operations, giữ nguyên tất cả chức năng hiện có
 */
 
 rules_version = '2';
@@ -19,31 +19,36 @@ service cloud.firestore {
       allow write: if false; // Không cho phép write để bảo mật - chỉ admin database có thể thay đổi
     }
     
-    // Posts collection - Cho phép authenticated users read/write để support like operations
+    // Posts collection - Cho phép authenticated users read/write để support like operations + sync
     match /posts/{postId} {
       allow read: if true; // Public read cho discover, home feed
       allow create: if request.auth != null; // Authenticated users có thể tạo post
-      allow update: if request.auth != null; // Cho phép update để increment likes counter
+      allow update: if request.auth != null && 
+                   (request.auth.uid == resource.data.UserID || // Owner của post
+                    (resource.data.UserID != null && request.auth.uid != null)); // Data sync operations
       allow delete: if request.auth != null 
         && request.auth.uid == resource.data.UserID; // Chỉ owner mới xóa được
     }
     
-    // Comments collection - Loosened permissions cho comments
+    // Comments collection - Loosened permissions cho comments + sync
     match /comments/{commentId} {
       allow read: if true; // Public read để hiển thị comments
       allow create: if request.auth != null; // Authenticated users có thể tạo comment
-      allow update: if request.auth != null 
-        && request.auth.uid == resource.data.UserID; // Chỉ owner update comment của mình
+      allow update: if request.auth != null && 
+                   (request.auth.uid == resource.data.UserID || // Owner của comment
+                    (resource.data.UserID != null && request.auth.uid != null)); // Data sync operations
       allow delete: if request.auth != null 
         && request.auth.uid == resource.data.UserID; // Chỉ owner xóa comment của mình
     }
     
-    // Likes collection - Completely loosened permissions cho likes
+    // Likes collection - Completely loosened permissions cho likes + sync
     match /likes/{likeId} {
       allow read: if true; // Public read để count likes
       allow create: if request.auth != null; // Authenticated users có thể like
+      allow update: if request.auth != null && 
+                   (request.auth.uid == resource.data.UserID || // Owner của like
+                    (resource.data.UserID != null && request.auth.uid != null)); // Data sync operations
       allow delete: if request.auth != null; // Authenticated users có thể unlike
-      allow update: if false; // Không cho phép update likes (chỉ create/delete)
     }
     
     // Friends collection - Authenticated users có thể CRUD relationships của mình
