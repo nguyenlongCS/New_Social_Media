@@ -1,7 +1,7 @@
 <!--
-src/views/FriendsView.vue - Trang quản lý bạn bè sử dụng LeftSide có sẵn và FriendsMain - Updated with NearbyUsers
-Sử dụng LeftSide component có sẵn, thêm FriendsMain component trung tâm để tránh tràn nội dung
-Tích hợp chức năng tìm bạn xung quanh với Mapbox
+src/views/FriendsView.vue - Updated Version
+Trang quản lý bạn bè với tích hợp notifications khi chấp nhận lời mời kết bạn
+Sử dụng acceptFriendRequestWithNotification để tự động tạo thông báo
 -->
 <template>
   <div class="friends-view">
@@ -69,7 +69,7 @@ export default {
     // Auth user state
     const { user, isAuthLoading, waitForUserWithTimeout } = useAuthUser()
     
-    // Friends composable
+    // Friends composable - sử dụng version có notifications
     const {
       friendsList,
       usersList,
@@ -80,7 +80,7 @@ export default {
       loadUsersList,
       getFriendRequests,
       sendFriendRequest,
-      handleAcceptRequest: acceptRequest,
+      acceptFriendRequestWithNotification,
       handleRejectRequest: rejectRequest,
       unfriend
     } = useFriends()
@@ -147,20 +147,23 @@ export default {
       }
     }
     
-    // Chấp nhận lời mời kết bạn
+    // Chấp nhận lời mời kết bạn - tích hợp notifications
     const handleAcceptRequest = async (request) => {
       if (isProcessing.value) return
       
       isProcessing.value = true
       
       try {
-        await acceptRequest(request.requestId)
+        const currentUser = await waitForUserWithTimeout(3000)
+        if (!currentUser?.uid) {
+          throw new Error('Vui lòng đăng nhập')
+        }
+        
+        // Sử dụng function có notifications để tự động tạo thông báo
+        await acceptFriendRequestWithNotification(request.requestId, currentUser)
         
         // Reload danh sách bạn bè sau khi chấp nhận
-        const currentUser = await waitForUserWithTimeout(3000)
-        if (currentUser?.uid) {
-          await loadFriendsList(currentUser.uid)
-        }
+        await loadFriendsList(currentUser.uid)
         
         alert('Đã chấp nhận lời mời kết bạn!')
         

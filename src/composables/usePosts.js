@@ -1,7 +1,7 @@
 /*
-src/composables/usePosts.js - Composable quản lý posts từ Firestore
-Load posts từ collection "posts", real-time updates, pagination, like/comment integration - Singleton pattern
-Fixed: Load comments khi chọn post, track liked status
+src/composables/usePosts.js - Updated Version
+Composable quản lý posts từ Firestore với tích hợp notifications
+Tự động tạo thông báo khi like/unlike posts
 */
 import { ref, computed } from 'vue'
 import { 
@@ -16,6 +16,7 @@ import {
 import { db } from '@/firebase/config'
 import { useLikes } from './useLikes'
 import { useComments } from './useComments'
+import { useNotifications } from './useNotifications'
 
 // Singleton state - shared across all components
 let postsState = null
@@ -227,7 +228,7 @@ function createPostsState() {
     return posts.value.find(post => post.id === postId) || null
   }
   
-  // Like/Unlike post - tích hợp với useLikes và useComments
+  // Like/Unlike post - tích hợp với notifications
   const toggleLike = async (postId, user) => {
     if (!postId || !user) return
     
@@ -235,6 +236,7 @@ function createPostsState() {
     if (!post) return
     
     const likes = useLikes()
+    const { createLikeNotification } = useNotifications()
     
     try {
       const result = await likes.toggleLike(user, postId)
@@ -247,6 +249,11 @@ function createPostsState() {
       // Cập nhật userLikedPosts set
       if (result.liked) {
         userLikedPosts.value.add(postId)
+        
+        // Tạo thông báo like cho chủ bài viết (nếu không phải chính mình)
+        if (post.authorId && post.authorId !== user.uid) {
+          await createLikeNotification(postId, post.authorId, user)
+        }
       } else {
         userLikedPosts.value.delete(postId)
       }
@@ -256,7 +263,7 @@ function createPostsState() {
     }
   }
   
-  // Load comments cho post được chọn - Fixed để luôn load fresh data
+  // Load comments cho post được chọn
   const loadPostComments = async (postId) => {
     if (!postId) return
     
@@ -283,11 +290,12 @@ function createPostsState() {
     }
   }
   
-  // Thêm comment cho post
+  // Thêm comment cho post - tích hợp với notifications
   const addCommentToPost = async (postId, user, commentText) => {
     if (!postId || !user || !commentText?.trim()) return
     
     const comments = useComments()
+    const { createCommentNotification } = useNotifications()
     
     try {
       const newComment = await comments.addComment(user, postId, commentText)
@@ -298,6 +306,11 @@ function createPostsState() {
         if (!post.comments) post.comments = []
         post.comments.unshift(newComment) // Thêm vào đầu danh sách
         post.commentsCount = post.comments.length
+        
+        // Tạo thông báo comment cho chủ bài viết (nếu không phải chính mình)
+        if (post.authorId && post.authorId !== user.uid) {
+          await createCommentNotification(postId, post.authorId, user, commentText)
+        }
       }
       
       return newComment

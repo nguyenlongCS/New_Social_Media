@@ -1,7 +1,7 @@
 /*
-src/composables/useFriends.js - Composable quản lý hệ thống bạn bè
-Quản lý friends collection, friend requests, load danh sách bạn bè và users
-Collection "friends": receiverID, senderID, status, createdAt
+src/composables/useFriends.js - Updated Version
+Composable quản lý hệ thống bạn bè với tích hợp notifications
+Tự động tạo thông báo khi chấp nhận lời mời kết bạn
 */
 import { ref } from 'vue'
 import { 
@@ -19,6 +19,7 @@ import {
   and
 } from 'firebase/firestore'
 import { db } from '@/firebase/config'
+import { useNotifications } from './useNotifications'
 
 export function useFriends() {
   const friendsList = ref([])
@@ -26,6 +27,9 @@ export function useFriends() {
   const friendRequests = ref([])
   const isLoading = ref(false)
   const errorMessage = ref('')
+  
+  // Import notifications composable
+  const { createFriendAcceptNotification } = useNotifications()
   
   // Format timestamp cho hiển thị
   const formatTimestamp = (timestamp) => {
@@ -364,19 +368,38 @@ export function useFriends() {
     }
   }
   
-  // Chấp nhận lời mời kết bạn
+  // Chấp nhận lời mời kết bạn - tích hợp notifications
   const handleAcceptRequest = async (requestId) => {
     if (!requestId) {
       throw new Error('Request ID không hợp lệ')
     }
     
     try {
+      // Lấy thông tin request để tạo notification
+      const requestQuery = query(
+        collection(db, 'friends'),
+        where('__name__', '==', requestId)
+      )
+      const requestSnapshot = await getDocs(requestQuery)
+      
+      let requestData = null
+      if (!requestSnapshot.empty) {
+        requestData = requestSnapshot.docs[0].data()
+      }
+      
       // Cập nhật status từ pending thành accepted
       const requestRef = doc(db, 'friends', requestId)
       await updateDoc(requestRef, {
         status: 'accepted',
         acceptedAt: serverTimestamp()
       })
+      
+      // Tạo thông báo cho người gửi request
+      if (requestData && requestData.senderID) {
+        // Lấy thông tin người chấp nhận từ auth context (cần được truyền vào)
+        // Tạm thời skip notification creation vì cần user context
+        console.log('Friend request accepted - notification will be created separately')
+      }
       
       // Xóa request khỏi danh sách local
       friendRequests.value = friendRequests.value.filter(req => req.requestId !== requestId)
@@ -386,6 +409,53 @@ export function useFriends() {
     } catch (error) {
       console.error('Error accepting friend request:', error)
       throw new Error('Không thể chấp nhận lời mời')
+    }
+  }
+  
+  // Chấp nhận lời mời với user context để tạo notification
+  const acceptFriendRequestWithNotification = async (requestId, currentUser) => {
+    if (!requestId || !currentUser) {
+      throw new Error('Thông tin không hợp lệ')
+    }
+    
+    try {
+      // Lấy thông tin request
+      const requestsQuery = query(
+        collection(db, 'friends'),
+        where('receiverID', '==', currentUser.uid),
+        where('status', '==', 'pending')
+      )
+      const requestsSnapshot = await getDocs(requestsQuery)
+      
+      let targetRequestData = null
+      requestsSnapshot.forEach((doc) => {
+        if (doc.id === requestId) {
+          targetRequestData = doc.data()
+        }
+      })
+      
+      if (!targetRequestData) {
+        throw new Error('Không tìm thấy lời mời kết bạn')
+      }
+      
+      // Cập nhật status thành accepted
+      const requestRef = doc(db, 'friends', requestId)
+      await updateDoc(requestRef, {
+        status: 'accepted',
+        acceptedAt: serverTimestamp()
+      })
+      
+      // Tạo thông báo cho người gửi request
+      await createFriendAcceptNotification(targetRequestData.senderID, currentUser)
+      
+      // Xóa request khỏi danh sách local
+      friendRequests.value = friendRequests.value.filter(req => req.requestId !== requestId)
+      
+      return true
+      
+    } catch (error) {
+      console.error('Error accepting friend request with notification:', error)
+      throw error
     }
   }
   
@@ -456,6 +526,7 @@ export function useFriends() {
     getFriendRequests,
     sendFriendRequest,
     handleAcceptRequest,
+    acceptFriendRequestWithNotification,
     handleRejectRequest,
     unfriend,
     resetFriendsData

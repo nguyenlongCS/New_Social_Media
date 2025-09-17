@@ -1,6 +1,7 @@
 <!--
 src/components/Header.vue - Updated Version
-Header với navigation và avatar sync - Profile-pic tự động cập nhật khi thay đổi avatar
+Header với notification icon và badge số lượng thông báo chưa đọc
+Tích hợp NotificationPanel và tự động khởi tạo listener khi user đăng nhập
 -->
 <template>
   <header class="top-bar">
@@ -22,9 +23,30 @@ Header với navigation và avatar sync - Profile-pic tự động cập nhật 
       <a href="#" class="nav-icon" title="Messages" @click.prevent="navigateTo('/messages')">
         <img src="@/assets/icons/mess.png" alt="Messages" width="20" height="20">
       </a>
-      <a href="#" class="nav-icon" title="Notification" @click.prevent="navigateTo('/notifications')">
-        <img src="@/assets/icons/notification.png" alt="Notification" width="20" height="20">
-      </a>
+      
+      <!-- Notification Icon với Badge -->
+      <div class="notification-container" ref="notificationContainerRef">
+        <button 
+          class="nav-icon notification-btn" 
+          title="Thông báo" 
+          @click="toggleNotificationPanel"
+          :class="{ active: showNotificationPanel }"
+        >
+          <img src="@/assets/icons/notification.png" alt="Notification" width="20" height="20">
+          <!-- Badge số lượng thông báo chưa đọc -->
+          <span v-if="unreadCount > 0" class="notification-badge">
+            {{ unreadCount > 99 ? '99+' : unreadCount }}
+          </span>
+        </button>
+        
+        <!-- Notification Panel -->
+        <NotificationPanel 
+          v-if="showNotificationPanel"
+          :is-visible="showNotificationPanel"
+          @close="hideNotificationPanel"
+          @notification-clicked="handleNotificationClicked"
+        />
+      </div>
     </nav>
     
     <div class="search-bar">
@@ -40,9 +62,9 @@ Header với navigation và avatar sync - Profile-pic tự động cập nhật 
         <span v-else>Logout</span>
       </button>
       
-      <!-- Profile Picture with Real-time Avatar Update -->
+      <!-- Profile Picture với Real-time Avatar Update -->
       <div class="profile-pic" :title="profileTooltip" @click="navigateTo('/profile')">
-        <!-- Show current avatar from Firestore or auth provider -->
+        <!-- Show current avatar from Firestore hoặc auth provider -->
         <img 
           v-if="currentAvatar" 
           :src="currentAvatar" 
@@ -50,10 +72,10 @@ Header với navigation và avatar sync - Profile-pic tự động cập nhật 
           class="user-avatar"
           @error="handleAvatarError"
         >
-        <!-- Default avatar with user initials -->
+        <!-- Default avatar với user initials -->
         <div v-else class="default-avatar">{{ userInitials }}</div>
         
-        <!-- Loading indicator when avatar is updating -->
+        <!-- Loading indicator khi avatar đang cập nhật -->
         <div v-if="isAvatarUpdating" class="avatar-updating-overlay">
           <div class="spinner-tiny"></div>
         </div>
@@ -67,16 +89,23 @@ import { ref, computed, watch, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthUser } from '../composables/useAuthUser'
 import { useAuth } from '../composables/useAuth'
+import { useNotifications } from '../composables/useNotifications'
 import { doc, onSnapshot } from 'firebase/firestore'
 import { db } from '../firebase/config'
+import NotificationPanel from './NotificationPanel.vue'
 
 export default {
   name: 'Header',
+  components: {
+    NotificationPanel
+  },
   setup() {
     const router = useRouter()
     const searchQuery = ref('')
     const isAvatarUpdating = ref(false)
     const firestoreAvatar = ref('')
+    const showNotificationPanel = ref(false)
+    const notificationContainerRef = ref(null)
     let unsubscribeProfile = null
     
     // Sử dụng useAuthUser cho user state
@@ -84,6 +113,13 @@ export default {
     
     // Sử dụng useAuth chỉ cho logout function
     const { logout, isLoading, cleanup } = useAuth()
+    
+    // Sử dụng useNotifications cho thông báo
+    const {
+      unreadCount,
+      startListening: startNotificationListening,
+      stopListening: stopNotificationListening
+    } = useNotifications()
     
     // Watch for avatar updates in real-time từ Firestore
     watch(userId, (newUserId, oldUserId) => {
@@ -107,8 +143,13 @@ export default {
         }, (error) => {
           console.error('Header: Error listening to profile updates:', error)
         })
+        
+        // Khởi tạo notifications listener
+        startNotificationListening(newUserId)
       } else {
         firestoreAvatar.value = ''
+        // Dừng notifications listener khi user logout
+        stopNotificationListening()
       }
     }, { immediate: true })
     
@@ -154,7 +195,7 @@ export default {
       return 'Profile'
     })
     
-    // Watch avatar changes to show updating indicator
+    // Watch avatar changes để show updating indicator
     watch(currentAvatar, (newAvatar, oldAvatar) => {
       if (oldAvatar && newAvatar && oldAvatar !== newAvatar) {
         console.log('Header: Avatar changed from', oldAvatar, 'to', newAvatar)
@@ -174,14 +215,44 @@ export default {
       event.target.style.display = 'none'
     }
     
+    // Xử lý toggle notification panel
+    const toggleNotificationPanel = () => {
+      showNotificationPanel.value = !showNotificationPanel.value
+    }
+    
+    // Ẩn notification panel
+    const hideNotificationPanel = () => {
+      showNotificationPanel.value = false
+    }
+    
+    // Xử lý khi click vào thông báo
+    const handleNotificationClicked = (notification) => {
+      // Điều hướng tùy theo loại thông báo
+      if (notification.type === 'like' || notification.type === 'comment') {
+        // Điều hướng về home nếu có postID
+        if (notification.postID) {
+          router.push('/home')
+        }
+      } else if (notification.type === 'friend_accept') {
+        // Điều hướng về friends page
+        router.push('/friends')
+      }
+      
+      // Ẩn panel
+      hideNotificationPanel()
+    }
+    
     // Xử lý logout
     const handleLogout = async () => {
       try {
-        // Cleanup profile listener before logout
+        // Cleanup profile listener trước khi logout
         if (unsubscribeProfile) {
           unsubscribeProfile()
           unsubscribeProfile = null
         }
+        
+        // Dừng notifications listener
+        stopNotificationListening()
         
         await logout()
         cleanup()
@@ -196,14 +267,18 @@ export default {
       if (router.currentRoute.value.path !== path) {
         router.push(path)
       }
+      
+      // Ẩn notification panel khi điều hướng
+      hideNotificationPanel()
     }
     
-    // Cleanup when component unmounts
+    // Cleanup khi component unmounts
     onMounted(() => {
       return () => {
         if (unsubscribeProfile) {
           unsubscribeProfile()
         }
+        stopNotificationListening()
       }
     })
     
@@ -216,7 +291,13 @@ export default {
       userInitials,
       profileTooltip,
       isAvatarUpdating,
+      showNotificationPanel,
+      notificationContainerRef,
+      unreadCount,
       handleAvatarError,
+      toggleNotificationPanel,
+      hideNotificationPanel,
+      handleNotificationClicked,
       handleLogout,
       navigateTo
     }
