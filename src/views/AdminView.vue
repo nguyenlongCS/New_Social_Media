@@ -107,25 +107,25 @@ Kiểm tra role admin từ collection users thay vì collection admin
                 <div class="charts-grid">
                     <!-- Hoạt động 7 ngày qua từ dữ liệu thực tế -->
                     <div class="chart-container">
-                        <h3 class="chart-title">Hoạt Động 7 Ngày Qua (Dữ liệu thực tế)</h3>
+                        <h3 class="chart-title">Hoạt Động 7 Ngày Qua</h3>
                         <canvas ref="userGrowthChart" class="chart-canvas"></canvas>
                     </div>
 
                     <!-- Phân Bố Nội Dung từ posts thực tế -->
                     <div class="chart-container">
-                        <h3 class="chart-title">Phân Bố Nội Dung (Dữ liệu thực tế)</h3>
+                        <h3 class="chart-title">Phân Bố Nội Dung</h3>
                         <canvas ref="postDistributionChart" class="chart-canvas"></canvas>
                     </div>
 
                     <!-- Tổng Quan Tương Tác từ thống kê thực tế -->
                     <div class="chart-container">
-                        <h3 class="chart-title">Tổng Quan Tương Tác (Dữ liệu thực tế)</h3>
+                        <h3 class="chart-title">Tổng Quan Tương Tác</h3>
                         <canvas ref="interactionChart" class="chart-canvas"></canvas>
                     </div>
 
                     <!-- Người Dùng Hoạt Động Nhất từ dữ liệu thực tế -->
                     <div class="chart-container">
-                        <h3 class="chart-title">Người Dùng Hoạt Động Nhất (Dữ liệu thực tế)</h3>
+                        <h3 class="chart-title">Người Dùng Hoạt Động Nhất</h3>
                         <canvas ref="activeUsersChart" class="chart-canvas"></canvas>
                     </div>
                 </div>
@@ -134,7 +134,7 @@ Kiểm tra role admin từ collection users thay vì collection admin
             <!-- Users Management Tab với dữ liệu thực tế -->
             <div v-if="activeTab === 'users'" class="users-tab">
                 <div class="tab-header">
-                    <h2>Quản lý người dùng (Dữ liệu thực tế)</h2>
+                    <h2>Quản lý người dùng</h2>
                     <button @click="loadAllUsers" :disabled="isLoadingUsers" class="refresh-btn">
                         <img src="@/assets/icons/setting.png" alt="Refresh" width="16" height="16">
                         Làm mới
@@ -186,7 +186,7 @@ Kiểm tra role admin từ collection users thay vì collection admin
             <!-- Posts Management Tab với dữ liệu thực tế -->
             <div v-if="activeTab === 'posts'" class="posts-tab">
                 <div class="tab-header">
-                    <h2>Quản lý bài viết (Dữ liệu thực tế)</h2>
+                    <h2>Quản lý bài viết</h2>
                     <button @click="loadAllPosts" :disabled="isLoadingPosts" class="refresh-btn">
                         <img src="@/assets/icons/setting.png" alt="Refresh" width="16" height="16">
                         Làm mới
@@ -232,7 +232,7 @@ Kiểm tra role admin từ collection users thay vì collection admin
             <!-- Comments Management Tab với dữ liệu thực tế -->
             <div v-if="activeTab === 'comments'" class="comments-tab">
                 <div class="tab-header">
-                    <h2>Quản lý bình luận (Dữ liệu thực tế)</h2>
+                    <h2>Quản lý bình luận</h2>
                     <button @click="loadAllComments" :disabled="isLoadingComments" class="refresh-btn">
                         <img src="@/assets/icons/setting.png" alt="Refresh" width="16" height="16">
                         Làm mới
@@ -351,7 +351,7 @@ export default {
               labels: chartData.value.labels,
               datasets: [
                 {
-                  label: 'Bài viết (thực tế)',
+                  label: 'Bài viết',
                   data: chartData.value.postsOverTime,
                   borderColor: '#2563eb',
                   backgroundColor: 'rgba(37, 99, 235, 0.1)',
@@ -359,7 +359,7 @@ export default {
                   fill: false
                 },
                 {
-                  label: 'Likes (thực tế)',
+                  label: 'Likes',
                   data: chartData.value.likesOverTime,
                   borderColor: '#dc2626',
                   backgroundColor: 'rgba(220, 38, 38, 0.1)',
@@ -367,7 +367,7 @@ export default {
                   fill: false
                 },
                 {
-                  label: 'Comments (thực tế)',
+                  label: 'Comments',
                   data: chartData.value.commentsOverTime,
                   borderColor: '#16a34a',
                   backgroundColor: 'rgba(22, 163, 74, 0.1)',
@@ -417,7 +417,7 @@ export default {
             data: {
               labels: ['Người dùng', 'Bài viết', 'Likes', 'Comments'],
               datasets: [{
-                label: 'Tổng số (thực tế)',
+                label: 'Tổng số',
                 data: [
                   dashboardStats.value.totalUsers,
                   dashboardStats.value.totalPosts,
@@ -446,7 +446,7 @@ export default {
             data: {
               labels: chartData.value.topUsersData.map(user => user.userName),
               datasets: [{
-                label: 'Số bài viết (thực tế)',
+                label: 'Số bài viết',
                 data: chartData.value.topUsersData.map(user => user.postsCount),
                 backgroundColor: '#8b5cf6',
                 borderRadius: 4

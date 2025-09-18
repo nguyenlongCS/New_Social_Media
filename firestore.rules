@@ -1,17 +1,26 @@
 /*
-firestore.rules - Updated Version với Notifications
-Firestore Security Rules cho Social Media Web Database - cập nhật với notifications permissions
-Thêm rules cho collection 'notifications' để hỗ trợ hệ thống thông báo realtime
+firestore.rules - Updated Version với Admin Permissions
+Firestore Security Rules cho Social Media Web Database - thêm admin permissions
+Giữ nguyên tất cả rules hiện tại + thêm admin có thể thực hiện mọi operations
 */
 
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
     
-    // Users collection - Chỉ owner có thể chỉnh sửa, tất cả có thể đọc
+    // Helper function kiểm tra admin role từ collection users
+    function isAdmin() {
+      return request.auth != null && 
+             exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.Role == 'admin';
+    }
+    
+    // Users collection - Chỉ owner có thể chỉnh sửa, tất cả có thể đọc + Admin full access
     match /users/{userId} {
       allow read: if true; // Cho phép đọc public để hiển thị profile, search users
       allow write: if request.auth != null && request.auth.uid == userId;
+      // Admin có thể read/write/delete tất cả users
+      allow read, write, delete: if isAdmin();
     }
     
     // Admin collection - Authenticated users có thể đọc để check admin status
@@ -20,7 +29,7 @@ service cloud.firestore {
       allow write: if false; // Không cho phép write để bảo mật - chỉ admin database có thể thay đổi
     }
     
-    // Posts collection - Cho phép authenticated users read/write để support like operations + sync
+    // Posts collection - Cho phép authenticated users read/write để support like operations + sync + Admin full access
     match /posts/{postId} {
       allow read: if true; // Public read cho discover, home feed
       allow create: if request.auth != null; // Authenticated users có thể tạo post
@@ -29,9 +38,11 @@ service cloud.firestore {
                     (resource.data.UserID != null && request.auth.uid != null)); // Data sync operations
       allow delete: if request.auth != null 
         && request.auth.uid == resource.data.UserID; // Chỉ owner mới xóa được
+      // Admin có thể read/write/delete tất cả posts
+      allow read, write, delete: if isAdmin();
     }
     
-    // Comments collection - Loosened permissions cho comments + sync
+    // Comments collection - Loosened permissions cho comments + sync + Admin full access
     match /comments/{commentId} {
       allow read: if true; // Public read để hiển thị comments
       allow create: if request.auth != null; // Authenticated users có thể tạo comment
@@ -40,9 +51,11 @@ service cloud.firestore {
                     (resource.data.UserID != null && request.auth.uid != null)); // Data sync operations
       allow delete: if request.auth != null 
         && request.auth.uid == resource.data.UserID; // Chỉ owner xóa comment của mình
+      // Admin có thể read/write/delete tất cả comments
+      allow read, write, delete: if isAdmin();
     }
     
-    // Likes collection - Completely loosened permissions cho likes + sync
+    // Likes collection - Completely loosened permissions cho likes + sync + Admin full access
     match /likes/{likeId} {
       allow read: if true; // Public read để count likes
       allow create: if request.auth != null; // Authenticated users có thể like
@@ -50,9 +63,11 @@ service cloud.firestore {
                    (request.auth.uid == resource.data.UserID || // Owner của like
                     (resource.data.UserID != null && request.auth.uid != null)); // Data sync operations
       allow delete: if request.auth != null; // Authenticated users có thể unlike
+      // Admin có thể read/write/delete tất cả likes
+      allow read, write, delete: if isAdmin();
     }
     
-    // Friends collection - Authenticated users có thể CRUD relationships của mình
+    // Friends collection - Authenticated users có thể CRUD relationships của mình + Admin full access
     match /friends/{friendshipId} {
       allow read: if request.auth != null;
       allow create: if request.auth != null 
@@ -64,9 +79,11 @@ service cloud.firestore {
       allow delete: if request.auth != null 
         && (request.auth.uid == resource.data.senderID 
         || request.auth.uid == resource.data.receiverID);
+      // Admin có thể read/write/delete tất cả friend relationships
+      allow read, write, delete: if isAdmin();
     }
     
-    // Notifications collection - Recipient có thể đọc và update, sender có thể tạo
+    // Notifications collection - Recipient có thể đọc và update, sender có thể tạo + Admin full access
     match /notifications/{notificationId} {
       // Recipient có thể đọc notifications của mình
       allow read: if request.auth != null 
@@ -82,31 +99,54 @@ service cloud.firestore {
       
       // Không cho phép xóa notifications để giữ lịch sử
       allow delete: if false;
+      
+      // Admin có thể read/write/delete tất cả notifications
+      allow read, write, delete: if isAdmin();
     }
     
-    // User Locations collection cho nearby friends feature
+    // User Locations collection cho nearby friends feature + Admin full access
     match /userLocations/{userId} {
       allow read: if request.auth != null; // Authenticated users có thể đọc locations để tìm nearby friends
       allow write: if request.auth != null && request.auth.uid == userId; // Chỉ owner có thể write location của mình
       allow delete: if request.auth != null && request.auth.uid == userId; // Chỉ owner có thể xóa location của mình
+      // Admin có thể read/write/delete tất cả user locations
+      allow read, write, delete: if isAdmin();
     }
     
-    // Locations collection cho nearby users feature - Thêm collection mới
+    // Locations collection cho nearby users feature - Thêm collection mới + Admin full access
     match /locations/{userId} {
       allow read: if request.auth != null; // Authenticated users có thể đọc locations để tìm nearby users
       allow write: if request.auth != null && request.auth.uid == userId; // Chỉ owner có thể write location của mình
       allow delete: if request.auth != null && request.auth.uid == userId; // Chỉ owner có thể xóa location của mình
+      // Admin có thể read/write/delete tất cả locations
+      allow read, write, delete: if isAdmin();
     }
     
-    // News collection - READ ONLY cho authenticated users, chỉ Firebase Functions có quyền ghi
+    // News collection - READ ONLY cho authenticated users, chỉ Firebase Functions có quyền ghi + Admin full access
     match /news/{newsId} {
       allow read: if request.auth != null; // Authenticated users có thể đọc tin tức
       allow write: if false; // Không cho phép user ghi tin tức - chỉ Firebase Functions có quyền
+      // Admin có thể read/write/delete tất cả news
+      allow read, write, delete: if isAdmin();
+    }
+    
+    // Messages collection - Admin full access (nếu có)
+    match /messages/{messageId} {
+      // Giữ nguyên rules hiện tại nếu có
+      // Admin có thể read/write/delete tất cả messages
+      allow read, write, delete: if isAdmin();
+    }
+    
+    // Admin logs collection - Chỉ admin có thể access
+    match /admin_logs/{logId} {
+      allow read, write: if isAdmin();
     }
     
     // Deny all other collections
     match /{document=**} {
       allow read, write: if false;
+      // Admin có thể access bất kỳ collection nào khác
+      allow read, write: if isAdmin();
     }
   }
 }
