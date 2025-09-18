@@ -1,5 +1,11 @@
+<!--
+src/components/Touch.vue - Assistive Touch Component với Functional Actions
+Component hiển thị nút hỗ trợ nhanh trên màn hình với khả năng bật/tắt từ Settings
+Thực hiện các chức năng: Home navigation, Logout, Language toggle, Theme toggle, Music placeholder
+Tích hợp với router, auth system, language manager và theme manager
+-->
 <template>
-    <div v-if="show" class="assistive-touch" :class="{ 'is-dragging': drag }" ref="box">
+    <div v-if="isEnabled && show" class="assistive-touch" :class="{ 'is-dragging': drag }" ref="box">
         <div class="touch-button" ref="btn"></div>
         <div class="menu">
             <div v-for="(item, i) in acts" :key="item.name" class="menu-item" :title="item.name" :style="posStyle(i)"
@@ -11,8 +17,11 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted } from 'vue'
-import { useRoute } from 'vue-router'
+import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
+import { useAuth } from '@/composables/useAuth'
+import languageManager from '@/utils/languageManager'
+import themeManager from '@/utils/themeManager'
 
 import musicIcon from '@/assets/icons/music.png'
 import logoutIcon from '@/assets/icons/logout.png'
@@ -28,9 +37,64 @@ const acts = [
     { name: 'Music', icon: musicIcon }
 ]
 
-const route = useRoute(), box = ref(), btn = ref(), drag = ref(false)
+const route = useRoute()
+const router = useRouter()
+const { logout } = useAuth()
+const box = ref(), btn = ref(), drag = ref(false)
 const show = computed(() => route.path != '/login')
-const click = a => alert(a.toUpperCase() + ": Coming Soon!")
+
+// Kiểm tra trạng thái từ localStorage (mặc định là false/tắt)
+const isEnabled = ref(localStorage.getItem('show_assistive_touch') === 'true')
+
+// Xử lý click cho các action buttons
+const click = async (actionName) => {
+    try {
+        switch (actionName) {
+            case 'Home':
+                // Nếu đang ở /home thì refresh, không thì navigate
+                if (route.path === '/home') {
+                    window.location.reload()
+                } else {
+                    await router.push('/home')
+                }
+                break
+                
+            case 'Logout':
+                // Thực hiện logout giống như trong Header
+                await logout()
+                await router.push('/login')
+                break
+                
+            case 'Language':
+                // Toggle giữa vi và en
+                const currentLang = languageManager.getCurrentLanguage()
+                const newLang = currentLang === 'vi' ? 'en' : 'vi'
+                languageManager.setLanguage(newLang)
+                break
+                
+            case 'Theme':
+                // Toggle giữa light và dark theme
+                themeManager.toggleTheme()
+                break
+                
+            case 'Music':
+                // Giữ nguyên thông báo placeholder
+                alert('MUSIC: Coming Soon!')
+                break
+                
+            default:
+                alert(actionName.toUpperCase() + ": Coming Soon!")
+        }
+    } catch (error) {
+        console.error('Touch action error:', error)
+        alert('Có lỗi xảy ra. Vui lòng thử lại!')
+    }
+}
+
+// Lắng nghe sự kiện từ Settings để cập nhật trạng thái
+const handleSettingsToggle = (event) => {
+    isEnabled.value = event.detail.enabled
+}
 
 // tính style vị trí theo hình ngũ giác đều
 const radius = 70
@@ -43,6 +107,9 @@ const posStyle = i => {
 
 let x, y
 const start = e => {
+    // Kiểm tra box.value tồn tại trước khi sử dụng
+    if (!box.value) return
+    
     x = e.clientX || e.touches[0].clientX
     y = e.clientY || e.touches[0].clientY
     drag.value = true
@@ -51,7 +118,11 @@ const start = e => {
     document.addEventListener('mouseup', end)
     document.addEventListener('touchend', end)
 }
+
 const move = e => {
+    // Kiểm tra box.value tồn tại trước khi sử dụng
+    if (!box.value) return
+    
     e.preventDefault()
     let nx = (e.clientX || e.touches[0].clientX) - x + box.value.offsetLeft
     let ny = (e.clientY || e.touches[0].clientY) - y + box.value.offsetTop
@@ -68,15 +139,38 @@ const end = () => {
     document.removeEventListener('mouseup', end)
     document.removeEventListener('touchend', end)
 }
-onMounted(() => { btn.value.addEventListener('mousedown', start); btn.value.addEventListener('touchstart', start) })
-onUnmounted(() => end())
+
+onMounted(async () => { 
+    // Đợi DOM render xong trước khi add event listeners
+    await nextTick()
+    
+    // Kiểm tra btn.value tồn tại trước khi add event listeners
+    if (btn.value) {
+        btn.value.addEventListener('mousedown', start)
+        btn.value.addEventListener('touchstart', start)
+    }
+    
+    // Lắng nghe sự kiện từ Settings
+    window.addEventListener('assistive-touch-toggle', handleSettingsToggle)
+})
+
+onUnmounted(() => {
+    end()
+    // Cleanup event listener từ button nếu tồn tại
+    if (btn.value) {
+        btn.value.removeEventListener('mousedown', start)
+        btn.value.removeEventListener('touchstart', start)
+    }
+    // Cleanup event listener từ window
+    window.removeEventListener('assistive-touch-toggle', handleSettingsToggle)
+})
 </script>
 
 <style scoped>
 .assistive-touch {
     position: fixed;
-    bottom: 20px;
-    left: 20px;
+    bottom: 70px;
+    left: 100px;
     width: 60px;
     height: 60px;
     z-index: 1000

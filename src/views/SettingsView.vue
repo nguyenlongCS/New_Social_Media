@@ -1,27 +1,22 @@
 <!--
-src/views/SettingsView.vue - Settings Page
-Trang cài đặt ứng dụng với chức năng chuyển đổi ngôn ngữ
+src/views/SettingsView.vue - Settings Page với Accessibility Support
+Trang cài đặt ứng dụng với chức năng chuyển đổi ngôn ngữ và bật/tắt Touch component
 Sử dụng LanguageManager để thực hiện global text replacement
+Quản lý hiển thị Touch component thông qua localStorage
 -->
 <template>
   <div class="settings-view">
     <Header />
-    
+
     <div v-if="isAuthLoading" class="loading-overlay" style="top: 3.75rem; height: calc(100vh - 3.75rem);">
       <div class="loading-content">
         <div class="spinner"></div>
         <p>Đang tải...</p>
       </div>
     </div>
-    
+
     <div v-else class="settings-container">
       <div class="settings-card">
-        <!-- Settings Header -->
-        <div class="settings-header">
-          <h1 class="page-title">Cài đặt</h1>
-          <p class="page-subtitle">Tùy chỉnh trải nghiệm ứng dụng của bạn</p>
-        </div>
-        
         <!-- Language Settings Section -->
         <div class="settings-section">
           <div class="section-header">
@@ -33,15 +28,10 @@ Sử dụng LanguageManager để thực hiện global text replacement
               <p class="section-description">Chọn ngôn ngữ hiển thị cho ứng dụng</p>
             </div>
           </div>
-          
+
           <div class="language-options">
-            <div 
-              v-for="language in availableLanguages"
-              :key="language.code"
-              class="language-option"
-              :class="{ active: currentLanguage === language.code }"
-              @click="handleLanguageChange(language.code)"
-            >
+            <div v-for="language in availableLanguages" :key="language.code" class="language-option"
+              :class="{ active: currentLanguage === language.code }" @click="handleLanguageChange(language.code)">
               <div class="language-info">
                 <div class="language-name">{{ language.name }}</div>
                 <div class="language-code">{{ language.code.toUpperCase() }}</div>
@@ -52,12 +42,7 @@ Sử dụng LanguageManager để thực hiện global text replacement
             </div>
           </div>
         </div>
-        
-        <!-- Success message khi đổi ngôn ngữ -->
-        <div v-if="showSuccessMessage" class="success-message">
-          Đã thay đổi ngôn ngữ thành công!
-        </div>
-        
+
         <!-- Theme Settings Section -->
         <div class="settings-section">
           <div class="section-header">
@@ -69,15 +54,10 @@ Sử dụng LanguageManager để thực hiện global text replacement
               <p class="section-description">Chọn chế độ hiển thị phù hợp với bạn</p>
             </div>
           </div>
-          
+
           <div class="theme-options">
-            <div 
-              v-for="theme in availableThemes"
-              :key="theme.code"
-              class="theme-option"
-              :class="{ active: currentTheme === theme.code }"
-              @click="handleThemeChange(theme.code)"
-            >
+            <div v-for="theme in availableThemes" :key="theme.code" class="theme-option"
+              :class="{ active: currentTheme === theme.code }" @click="handleThemeChange(theme.code)">
               <div class="theme-info">
                 <div class="theme-header">
                   <span class="theme-icon">{{ theme.icon }}</span>
@@ -87,6 +67,34 @@ Sử dụng LanguageManager để thực hiện global text replacement
               </div>
               <div v-if="currentTheme === theme.code" class="theme-selected">
                 <div class="check-icon">✓</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Accessibility Settings Section -->
+        <div class="settings-section">
+          <div class="section-header">
+            <div class="section-icon">
+              <img src="@/assets/icons/theme.png" alt="Accessibility" width="24" height="24">
+            </div>
+            <div class="section-info">
+              <h3 class="section-title">Hỗ trợ tiếp cận</h3>
+              <p class="section-description">Tùy chọn hỗ trợ cho người khuyết tật</p>
+            </div>
+          </div>
+
+          <div class="accessibility-options">
+            <div class="accessibility-option">
+              <div class="option-info">
+                <div class="option-name">Assistive Touch</div>
+                <div class="option-description">Hiển thị nút hỗ trợ nhanh trên màn hình</div>
+              </div>
+              <div class="option-toggle">
+                <label class="toggle-switch">
+                  <input type="checkbox" v-model="showAssistiveTouch" @change="handleAssistiveTouchChange">
+                  <span class="toggle-slider"></span>
+                </label>
               </div>
             </div>
           </div>
@@ -120,58 +128,54 @@ export default {
     const availableLanguages = ref(languageManager.getAvailableLanguages())
     const currentTheme = ref(themeManager.getCurrentTheme())
     const availableThemes = ref(themeManager.getAvailableThemes())
-    const showSuccessMessage = ref(false)
-    
+    const showAssistiveTouch = ref(localStorage.getItem('show_assistive_touch') === 'true')
+
     // Xử lý thay đổi ngôn ngữ
     const handleLanguageChange = (languageCode) => {
       if (languageCode === currentLanguage.value) return
-      
+
       // Cập nhật ngôn ngữ qua LanguageManager
       languageManager.setLanguage(languageCode)
       currentLanguage.value = languageCode
-      
-      // Hiển thị thông báo thành công
-      showSuccessMessage.value = true
-      
-      // Tự động ẩn thông báo sau 3 giây
-      setTimeout(() => {
-        showSuccessMessage.value = false
-      }, 3000)
     }
-    
+
     // Xử lý thay đổi theme
     const handleThemeChange = (themeCode) => {
       if (themeCode === currentTheme.value) return
-      
+
       // Cập nhật theme qua ThemeManager
       themeManager.setTheme(themeCode)
       currentTheme.value = themeCode
-      
-      // Hiển thị thông báo thành công
-      showSuccessMessage.value = true
-      
-      // Tự động ẩn thông báo sau 3 giây
-      setTimeout(() => {
-        showSuccessMessage.value = false
-      }, 3000)
     }
-    
+
+    // Xử lý bật/tắt Assistive Touch
+    const handleAssistiveTouchChange = () => {
+      // Lưu trạng thái vào localStorage
+      localStorage.setItem('show_assistive_touch', showAssistiveTouch.value.toString())
+
+      // Trigger event để Touch component cập nhật
+      window.dispatchEvent(new CustomEvent('assistive-touch-toggle', {
+        detail: { enabled: showAssistiveTouch.value }
+      }))
+    }
+
     // Khởi tạo khi component mount
     onMounted(() => {
       // Áp dụng ngôn ngữ và theme đã lưu
       languageManager.translatePage()
       themeManager.applyTheme(themeManager.getCurrentTheme())
     })
-    
+
     return {
       isAuthLoading,
       currentLanguage,
       availableLanguages,
       currentTheme,
       availableThemes,
-      showSuccessMessage,
+      showAssistiveTouch,
       handleLanguageChange,
-      handleThemeChange
+      handleThemeChange,
+      handleAssistiveTouchChange
     }
   }
 }
@@ -340,10 +344,25 @@ export default {
 }
 
 @keyframes fadeInOut {
-  0% { opacity: 0; transform: translateY(-10px); }
-  10% { opacity: 1; transform: translateY(0); }
-  90% { opacity: 1; transform: translateY(0); }
-  100% { opacity: 0; transform: translateY(-10px); }
+  0% {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+
+  10% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  90% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  100% {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
 }
 
 .coming-soon {
@@ -424,20 +443,109 @@ export default {
   justify-content: center;
 }
 
+.accessibility-options {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.accessibility-option {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.75rem;
+  background: white;
+  transition: border-color 0.2s ease;
+}
+
+.accessibility-option:hover {
+  border-color: #d1d5db;
+}
+
+.option-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.option-name {
+  font-size: 0.9375rem;
+  font-weight: 500;
+}
+
+.option-description {
+  font-size: 0.75rem;
+  color: #6b7280;
+  line-height: 1.3;
+}
+
+.option-toggle {
+  display: flex;
+  align-items: center;
+}
+
+.toggle-switch {
+  position: relative;
+  display: inline-block;
+  width: 48px;
+  height: 24px;
+  cursor: pointer;
+}
+
+.toggle-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.toggle-slider {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #cbd5e1;
+  border-radius: 24px;
+  transition: all 0.3s ease;
+}
+
+.toggle-slider:before {
+  position: absolute;
+  content: "";
+  height: 18px;
+  width: 18px;
+  left: 3px;
+  bottom: 3px;
+  background-color: white;
+  border-radius: 50%;
+  transition: all 0.3s ease;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+input:checked+.toggle-slider {
+  background-color: #2563eb;
+}
+
+input:checked+.toggle-slider:before {
+  transform: translateX(24px);
+}
+
 @media (max-width: 768px) {
   .settings-container {
     padding: 1rem;
   }
-  
+
   .settings-card {
     padding: 1.5rem;
   }
-  
+
   .section-header {
     flex-direction: column;
     gap: 0.75rem;
   }
-  
+
   .section-icon {
     align-self: flex-start;
   }
