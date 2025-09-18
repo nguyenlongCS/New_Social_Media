@@ -105,9 +105,9 @@ Kiểm tra role admin từ collection users thay vì collection admin
 
                 <!-- Charts Grid với dữ liệu thực tế -->
                 <div class="charts-grid">
-                    <!-- Hoạt động 7 ngày qua từ dữ liệu thực tế -->
+                    <!-- Hoạt động 30 ngày qua từ dữ liệu thực tế -->
                     <div class="chart-container">
-                        <h3 class="chart-title">Hoạt Động 7 Ngày Qua</h3>
+                        <h3 class="chart-title">Hoạt Động 30 Ngày Qua</h3>
                         <canvas ref="userGrowthChart" class="chart-canvas"></canvas>
                     </div>
 
@@ -342,7 +342,7 @@ export default {
       chartInstances.value = []
 
       try {
-        // 1. Line Chart - Hoạt động 7 ngày qua với dữ liệu thực tế
+        // 1. Line Chart - Hoạt động 30 ngày qua với dữ liệu thực tế
         if (userGrowthChart.value && chartData.value.labels) {
           const ctx1 = userGrowthChart.value.getContext('2d')
           const chart1 = new proxy.$Chart(ctx1, {

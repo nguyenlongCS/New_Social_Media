@@ -229,17 +229,17 @@ export function useAdmin() {
     try {
       const basicData = await loadBasicData()
       
-      // Tạo dữ liệu cho 7 ngày qua
-      const last7Days = []
+      // Tạo dữ liệu cho 30 ngày qua
+      const last30Days = []
       const postsOverTime = []
       const likesOverTime = []
       const commentsOverTime = []
       
-      // Tạo mảng 7 ngày
-      for (let i = 6; i >= 0; i--) {
+      // Tạo mảng 30 ngày
+      for (let i = 29; i >= 0; i--) {
         const date = new Date()
         date.setDate(date.getDate() - i)
-        last7Days.push(date.toLocaleDateString('vi-VN'))
+        last30Days.push(date.toLocaleDateString('vi-VN'))
         
         const dayStart = new Date(date.setHours(0, 0, 0, 0))
         const dayEnd = new Date(date.setHours(23, 59, 59, 999))
@@ -278,7 +278,7 @@ export function useAdmin() {
       ])
       
       chartData.value = {
-        labels: last7Days,
+        labels: last30Days,
         postsOverTime,
         likesOverTime,
         commentsOverTime,
