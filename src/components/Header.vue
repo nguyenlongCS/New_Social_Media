@@ -1,8 +1,10 @@
 <!--
-src/components/Header.vue - Updated Version
-Header với notification icon và badge số lượng thông báo chưa đọc
-Badge hiển thị dạng chấm tròn màu đỏ ở góc phải trên icon notifications
-Tích hợp NotificationPanel và tự động khởi tạo listener khi user đăng nhập
+src/components/Header.vue - Updated Version với Friends và Messages Badge
+Header với notification, friends và messages badge hiển thị số lượng chưa xử lý
+- Friends badge: Số lượng lời mời kết bạn chưa xử lý (pending friend requests)
+- Messages badge: Số lượng tin nhắn chưa đọc từ tất cả conversations
+- Notifications badge: Số lượng thông báo chưa đọc (đã có từ trước)
+Tích hợp useFriends và useMessages composables để lấy dữ liệu realtime
 -->
 <template>
   <header class="top-bar">
@@ -12,18 +14,35 @@ Tích hợp NotificationPanel và tự động khởi tạo listener khi user đ
       <a href="#" class="nav-icon" title="Profile" @click.prevent="navigateTo('/profile')">
         <img src="@/assets/icons/profile.png" alt="Profile" width="20" height="20">
       </a>
-      <a href="#" class="nav-icon" title="Friends" @click.prevent="navigateTo('/friends')">
-        <img src="@/assets/icons/friends.png" alt="Friends" width="20" height="20">
-      </a>
+      
+      <!-- Friends Icon với Badge số lời mời kết bạn -->
+      <div class="nav-icon-container">
+        <a href="#" class="nav-icon" title="Friends" @click.prevent="navigateTo('/friends')">
+          <img src="@/assets/icons/friends.png" alt="Friends" width="20" height="20">
+          <!-- Badge hiển thị số lời mời kết bạn chưa xử lý -->
+          <span v-if="friendRequestsCount > 0" class="nav-badge">
+            {{ friendRequestsCount > 99 ? '99+' : friendRequestsCount }}
+          </span>
+        </a>
+      </div>
+      
       <a href="#" class="nav-icon" title="Home" @click.prevent="navigateTo('/home')">
         <img src="@/assets/icons/home.png" alt="Home" width="20" height="20">
       </a>
       <a href="#" class="nav-icon" title="News" @click.prevent="navigateTo('/news')">
         <img src="@/assets/icons/news.png" alt="News" width="20" height="20">
       </a>
-      <a href="#" class="nav-icon" title="Messages" @click.prevent="navigateTo('/messages')">
-        <img src="@/assets/icons/mess.png" alt="Messages" width="20" height="20">
-      </a>
+      
+      <!-- Messages Icon với Badge số tin nhắn chưa đọc -->
+      <div class="nav-icon-container">
+        <a href="#" class="nav-icon" title="Messages" @click.prevent="navigateTo('/messages')">
+          <img src="@/assets/icons/mess.png" alt="Messages" width="20" height="20">
+          <!-- Badge hiển thị số tin nhắn chưa đọc -->
+          <span v-if="unreadMessagesCount > 0" class="nav-badge">
+            {{ unreadMessagesCount > 99 ? '99+' : unreadMessagesCount }}
+          </span>
+        </a>
+      </div>
       
       <!-- Notification Icon với Badge chấm tròn màu đỏ -->
       <div class="notification-container" ref="notificationContainerRef">
@@ -35,8 +54,8 @@ Tích hợp NotificationPanel và tự động khởi tạo listener khi user đ
         >
           <img src="@/assets/icons/notification.png" alt="Notification" width="20" height="20">
           <!-- Badge chấm tròn màu đỏ với số lượng thông báo chưa đọc -->
-          <span v-if="unreadCount > 0" class="notification-badge">
-            {{ unreadCount > 99 ? '99+' : unreadCount }}
+          <span v-if="unreadNotificationsCount > 0" class="notification-badge">
+            {{ unreadNotificationsCount > 99 ? '99+' : unreadNotificationsCount }}
           </span>
         </a>
         
@@ -60,7 +79,7 @@ Tích hợp NotificationPanel và tự động khởi tạo listener khi user đ
       <button class="logout-btn" @click="handleLogout" :disabled="isLoading">
         <img src="@/assets/icons/logout.png" alt="Logout" width="16" height="16">
         <span v-if="isLoading">Đang đăng xuất...</span>
-        <span v-else>Logout</span>
+        <span v-else">Logout</span>
       </button>
       
       <!-- Profile Picture với Real-time Avatar Update -->
@@ -86,11 +105,13 @@ Tích hợp NotificationPanel và tự động khởi tạo listener khi user đ
 </template>
 
 <script>
-import { ref, computed, watch, onMounted } from 'vue'
+import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthUser } from '../composables/useAuthUser'
 import { useAuth } from '../composables/useAuth'
 import { useNotifications } from '../composables/useNotifications'
+import { useFriends } from '../composables/useFriends'
+import { useMessages } from '../composables/useMessages'
 import { doc, onSnapshot } from 'firebase/firestore'
 import { db } from '../firebase/config'
 import NotificationPanel from './NotificationPanel.vue'
@@ -117,10 +138,54 @@ export default {
     
     // Sử dụng useNotifications cho thông báo
     const {
-      unreadCount,
+      unreadCount: unreadNotificationsCount,
       startListening: startNotificationListening,
       stopListening: stopNotificationListening
     } = useNotifications()
+    
+    // Sử dụng useFriends để lấy số lượng friend requests
+    const {
+      friendRequests,
+      getFriendRequests,
+      resetFriendsData
+    } = useFriends()
+    
+    // Sử dụng useMessages để lấy số lượng tin nhắn chưa đọc
+    const {
+      conversations,
+      loadConversations,
+      cleanup: cleanupMessages
+    } = useMessages()
+    
+    // Computed để đếm số lượng friend requests chưa xử lý
+    const friendRequestsCount = computed(() => {
+      return friendRequests.value ? friendRequests.value.length : 0
+    })
+    
+    // Computed để đếm số lượng tin nhắn chưa đọc từ tất cả conversations
+    const unreadMessagesCount = computed(() => {
+      return conversations.value.filter(conv => conv.hasUnread).length
+    })
+    
+    // Khởi tạo friends data để lấy số lượng friend requests
+    const initializeFriendsData = async (userId) => {
+      try {
+        await getFriendRequests(userId)
+        console.log('Header: Friend requests loaded:', friendRequests.value.length)
+      } catch (error) {
+        console.error('Header: Error loading friend requests:', error)
+      }
+    }
+    
+    // Khởi tạo messages data để lấy số lượng unread messages
+    const initializeMessagesData = async (userId) => {
+      try {
+        await loadConversations(userId)
+        console.log('Header: Conversations loaded, unread count:', unreadMessagesCount.value)
+      } catch (error) {
+        console.error('Header: Error loading conversations:', error)
+      }
+    }
     
     // Watch for avatar updates in real-time từ Firestore
     watch(userId, (newUserId, oldUserId) => {
@@ -147,10 +212,19 @@ export default {
         
         // Khởi tạo notifications listener
         startNotificationListening(newUserId)
+        
+        // Khởi tạo friends data để lấy friend requests count
+        initializeFriendsData(newUserId)
+        
+        // Khởi tạo messages data để lấy unread messages count
+        initializeMessagesData(newUserId)
+        
       } else {
         firestoreAvatar.value = ''
-        // Dừng notifications listener khi user logout
+        // Dừng tất cả listeners khi user logout
         stopNotificationListening()
+        resetFriendsData()
+        cleanupMessages()
       }
     }, { immediate: true })
     
@@ -252,8 +326,10 @@ export default {
           unsubscribeProfile = null
         }
         
-        // Dừng notifications listener
+        // Dừng tất cả listeners
         stopNotificationListening()
+        resetFriendsData()
+        cleanupMessages()
         
         await logout()
         cleanup()
@@ -280,7 +356,18 @@ export default {
           unsubscribeProfile()
         }
         stopNotificationListening()
+        resetFriendsData()
+        cleanupMessages()
       }
+    })
+    
+    onUnmounted(() => {
+      if (unsubscribeProfile) {
+        unsubscribeProfile()
+      }
+      stopNotificationListening()
+      resetFriendsData()
+      cleanupMessages()
     })
     
     return {
@@ -294,7 +381,9 @@ export default {
       isAvatarUpdating,
       showNotificationPanel,
       notificationContainerRef,
-      unreadCount,
+      unreadNotificationsCount,
+      friendRequestsCount,
+      unreadMessagesCount,
       handleAvatarError,
       toggleNotificationPanel,
       hideNotificationPanel,
@@ -331,7 +420,6 @@ nav {
   display: flex;
   gap: 1rem;
 }
-
 
 .logo {
   font-size: 1.375rem;
@@ -481,6 +569,12 @@ nav {
   100% { transform: rotate(360deg); }
 }
 
+/* Navigation icon container để chứa badge */
+.nav-icon-container {
+  position: relative;
+  display: inline-block;
+}
+
 /* Notification container styles - giữ thuộc tính nav-icon */
 .notification-container {
   position: relative;
@@ -497,7 +591,8 @@ nav {
   transform: scale(1.1);
 }
 
-/* Notification badge - chấm tròn màu đỏ với số ở góc phải trên */
+/* Badge styles chung cho tất cả navigation icons */
+.nav-badge,
 .notification-badge {
   position: absolute;
   top: -8px;
@@ -517,7 +612,7 @@ nav {
   animation: badgePulse 2s ease-in-out infinite;
 }
 
-/* Animation cho badge khi có thông báo mới */
+/* Animation cho badge khi có nội dung mới */
 @keyframes badgePulse {
   0%, 100% {
     transform: scale(1);
