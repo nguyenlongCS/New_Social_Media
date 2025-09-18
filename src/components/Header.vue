@@ -513,7 +513,6 @@ nav {
   font-size: 0.75rem;
   font-weight: 600;
   padding: 0 4px;
-  border: 2px solid rgba(255, 255, 255, 0.9);
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
   animation: badgePulse 2s ease-in-out infinite;
 }
