@@ -1,6 +1,7 @@
 <!--
 src/components/RightSide.vue - Final Fix Version  
-Sidebar bên phải hiển thị chi tiết bài viết - Fix load comments bằng cách fetch trực tiếp từ Firestore
+Sidebar bên phải hiển thị chi tiết bài viết - Fix notification comment
+Fixed: Sử dụng addCommentToPost từ usePosts thay vì addComment trực tiếp để tạo thông báo
 -->
 <template>
   <aside class="right-panel">
@@ -100,9 +101,9 @@ export default {
     const comments = ref([])
     
     // Sử dụng composables
-    const { selectedPost } = usePosts()
+    const { selectedPost, addCommentToPost } = usePosts() // Thêm addCommentToPost để tạo thông báo
     const { user } = useAuthUser()
-    const { getPostComments, addComment } = useComments()
+    const { getPostComments } = useComments()
     
     // Function load comments từ Firestore
     const loadComments = async (postId) => {
@@ -153,7 +154,7 @@ export default {
       { immediate: true }
     )
     
-    // Xử lý thêm comment
+    // Xử lý thêm comment - SỬA ĐỔI: Sử dụng addCommentToPost để tạo thông báo
     const handleAddComment = async () => {
       if (!commentText.value.trim()) {
         commentError.value = 'Vui lòng nhập bình luận'
@@ -174,15 +175,18 @@ export default {
       commentError.value = ''
       
       try {
-        console.log('RightSide: Adding comment to post', selectedPost.value.id)
+        console.log('RightSide: Adding comment to post via addCommentToPost', selectedPost.value.id)
+        console.log('RightSide: Selected post authorId:', selectedPost.value.authorId)
+        console.log('RightSide: Current user:', user.value.uid)
         
-        // Thêm comment vào Firestore
-        const newComment = await addComment(user.value, selectedPost.value.id, commentText.value)
+        // SỬA ĐỔI: Sử dụng addCommentToPost thay vì addComment trực tiếp
+        // Function này sẽ tự động tạo thông báo cho chủ bài viết
+        const newComment = await addCommentToPost(selectedPost.value.id, user.value, commentText.value)
         
-        console.log('RightSide: Comment added:', newComment)
+        console.log('RightSide: Comment added with notification:', newComment)
         
-        // Thêm comment vào local state ngay lập tức
-        comments.value.unshift(newComment)
+        // Reload comments để đảm bảo đồng bộ với Firestore
+        await loadComments(selectedPost.value.id)
         
         // Clear input
         commentText.value = ''

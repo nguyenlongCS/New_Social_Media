@@ -2,6 +2,7 @@
 src/composables/useComments.js - Fixed Version
 Composable quản lý comments với import userInfoHelper đúng cách
 Quản lý comments cho posts - collection "comments" với fields: Avatar, UserID, UserName, PostID, Created, Content
+Fixed: Đảm bảo trả về đúng thông tin để tạo thông báo comment
 */
 import { ref } from 'vue'
 import {
@@ -98,7 +99,7 @@ export function useComments() {
     }
   }
 
-  // Thêm comment mới với thông tin user từ Firestore
+  // Thêm comment mới với thông tin user từ Firestore - đảm bảo trả về đúng dữ liệu
   const addComment = async (user, postId, content) => {
     if (!user || !postId || !content?.trim()) {
       throw new Error('Thông tin comment không hợp lệ')
@@ -133,18 +134,18 @@ export function useComments() {
       // Clear cache để refresh thông tin user
       userInfoHelper.clearUserCache(user.uid)
 
-      // Trả về comment vừa tạo với format phù hợp
+      // Trả về comment vừa tạo với format phù hợp để sử dụng cho notification
       const newComment = {
         id: docRef.id,
         user: commentData.UserName,
         text: commentData.Content,
         avatar: commentData.Avatar,
         userId: commentData.UserID,
-        created: new Date(),
+        created: new Date(), // Sử dụng Date object thay vì serverTimestamp cho local update
         postId: commentData.PostID
       }
 
-      console.log('useComments: Returning new comment:', newComment)
+      console.log('useComments: Returning new comment for notification:', newComment)
       return newComment
 
     } catch (error) {

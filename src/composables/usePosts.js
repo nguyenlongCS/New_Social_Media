@@ -1,7 +1,8 @@
 /*
 src/composables/usePosts.js - Updated Version
 Composable quản lý posts từ Firestore với tích hợp notifications
-Tự động tạo thông báo khi like/unlike posts
+Tự động tạo thông báo khi like/unlike posts và comment posts
+Fixed: Thêm chức năng tạo thông báo comment hoạt động đúng
 */
 import { ref, computed } from 'vue'
 import { 
@@ -290,7 +291,7 @@ function createPostsState() {
     }
   }
   
-  // Thêm comment cho post - tích hợp với notifications
+  // Thêm comment cho post - tích hợp với notifications đầy đủ
   const addCommentToPost = async (postId, user, commentText) => {
     if (!postId || !user || !commentText?.trim()) return
     
@@ -298,19 +299,27 @@ function createPostsState() {
     const { createCommentNotification } = useNotifications()
     
     try {
+      // Tìm post để lấy thông tin authorId
+      const post = posts.value.find(p => p.id === postId)
+      if (!post) {
+        throw new Error('Không tìm thấy bài viết')
+      }
+      
+      // Thêm comment vào Firestore
       const newComment = await comments.addComment(user, postId, commentText)
       
       // Cập nhật comments locally
-      const post = posts.value.find(p => p.id === postId)
-      if (post) {
-        if (!post.comments) post.comments = []
-        post.comments.unshift(newComment) // Thêm vào đầu danh sách
-        post.commentsCount = post.comments.length
-        
-        // Tạo thông báo comment cho chủ bài viết (nếu không phải chính mình)
-        if (post.authorId && post.authorId !== user.uid) {
-          await createCommentNotification(postId, post.authorId, user, commentText)
-        }
+      if (!post.comments) post.comments = []
+      post.comments.unshift(newComment) // Thêm vào đầu danh sách
+      post.commentsCount = post.comments.length
+      
+      // Tạo thông báo comment cho chủ bài viết (nếu không phải chính mình)
+      if (post.authorId && post.authorId !== user.uid) {
+        console.log('Creating comment notification for post owner:', post.authorId)
+        await createCommentNotification(postId, post.authorId, user, commentText)
+        console.log('Comment notification created successfully')
+      } else {
+        console.log('Skipping comment notification - same user or no authorId')
       }
       
       return newComment

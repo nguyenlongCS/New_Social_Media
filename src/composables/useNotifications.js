@@ -2,6 +2,7 @@
 src/composables/useNotifications.js - Fixed Version với error handling
 Composable quản lý hệ thống thông báo realtime với xử lý lỗi permissions tốt hơn
 Thêm retry logic và fallback khi không có quyền truy cập
+Fixed: Đảm bảo createCommentNotification hoạt động đúng cách
 */
 import { ref, computed } from 'vue'
 import { 
@@ -183,18 +184,29 @@ function createNotificationsState() {
     }
   }
   
-  // Tạo thông báo khi có người comment bài viết với error handling
+  // Tạo thông báo khi có người comment bài viết - FIXED VERSION
   const createCommentNotification = async (postId, postOwnerId, commenter, commentContent) => {
     // Không tạo thông báo nếu người comment chính là chủ bài viết
-    if (commenter.uid === postOwnerId) return
+    if (commenter.uid === postOwnerId) {
+      console.log('Notifications: Skipping comment notification - same user')
+      return
+    }
     
     try {
+      console.log('Notifications: Creating comment notification')
+      console.log('Notifications: PostId:', postId)
+      console.log('Notifications: PostOwnerId:', postOwnerId)
+      console.log('Notifications: Commenter:', commenter.uid)
+      console.log('Notifications: Comment:', commentContent)
+      
       // Lấy thông tin người comment từ Firestore
       const commenterInfo = await userInfoHelper.getUserInfoForContent(commenter)
       if (!commenterInfo) {
-        console.warn('Cannot get commenter info for notification')
+        console.warn('Notifications: Cannot get commenter info for notification')
         return
       }
+      
+      console.log('Notifications: Commenter info:', commenterInfo)
       
       // Cắt ngắn nội dung comment nếu quá dài
       const shortComment = commentContent.length > 50 
@@ -213,14 +225,19 @@ function createNotificationsState() {
         createAt: serverTimestamp()
       }
       
-      await addDoc(collection(db, 'notifications'), notificationData)
-      console.log('Created comment notification')
+      console.log('Notifications: Creating notification with data:', notificationData)
+      
+      const docRef = await addDoc(collection(db, 'notifications'), notificationData)
+      console.log('Notifications: Comment notification created successfully with ID:', docRef.id)
       
     } catch (error) {
-      console.error('Error creating comment notification:', error)
+      console.error('Notifications: Error creating comment notification:', error)
       
       if (error.code === 'permission-denied') {
-        console.warn('Cannot create notification due to permissions. Please update Firestore Rules.')
+        console.warn('Notifications: Cannot create notification due to permissions. Please update Firestore Rules.')
+      } else if (error.code) {
+        console.error('Notifications: Firestore error code:', error.code)
+        console.error('Notifications: Firestore error message:', error.message)
       }
     }
   }
