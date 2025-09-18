@@ -79,7 +79,7 @@ Tích hợp useFriends và useMessages composables để lấy dữ liệu realt
       <button class="logout-btn" @click="handleLogout" :disabled="isLoading">
         <img src="@/assets/icons/logout.png" alt="Logout" width="16" height="16">
         <span v-if="isLoading">Đang đăng xuất...</span>
-        <span v-else">Logout</span>
+        <span v-else>Logout</span>
       </button>
       
       <!-- Profile Picture với Real-time Avatar Update -->

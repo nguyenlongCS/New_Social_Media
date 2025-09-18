@@ -1,7 +1,7 @@
 /*
-src/router/index.js - Router với admin guard cập nhật
+src/router/index.js - Router với admin guard cập nhật và thêm Settings route
 Cập nhật để kiểm tra role admin từ collection users thay vì collection admin
-Loại bỏ dependency vào collection admin
+Thêm route /settings cho trang cài đặt ứng dụng
 */
 import { createRouter, createWebHistory } from 'vue-router'
 import HomeView from '../views/HomeView.vue'
@@ -13,6 +13,7 @@ import FriendsView from '../views/FriendsView.vue'
 import NewsView from '../views/NewsView.vue'
 import MessagesView from '../views/MessagesView.vue'
 import AdminView from '../views/AdminView.vue'
+import SettingsView from '../views/SettingsView.vue'
 
 const router = createRouter({
   history: createWebHistory('/'),
@@ -68,6 +69,12 @@ const router = createRouter({
       name: 'admin',
       component: AdminView,
       meta: { requiresAuth: true, requiresAdmin: true }
+    },
+    {
+      path: '/settings',
+      name: 'settings',
+      component: SettingsView,
+      meta: { requiresAuth: true }
     },
     {
       path: '/login',

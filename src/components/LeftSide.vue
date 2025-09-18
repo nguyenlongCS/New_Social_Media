@@ -1,7 +1,7 @@
 <!--
-src/components/LeftSide.vue - Updated Version với button Admin
-Thêm button Admin vào navigation menu, chỉ hiển thị khi user có role admin
-Kiểm tra quyền admin và hiển thị button tương ứng
+src/components/LeftSide.vue - Updated Version với button Settings
+Thêm button Settings vào navigation menu để điều hướng đến trang cài đặt
+Giữ nguyên tất cả logic và giao diện hiện tại, chỉ thêm navigation cho Settings
 -->
 <template>
   <aside class="left-menu">
@@ -20,6 +20,7 @@ Kiểm tra quyền admin và hiển thị button tương ứng
         <img src="@/assets/icons/admin.png" alt="Admin" width="18" height="18">
         <span>Admin</span>
       </button>
+      <!-- Settings button - thêm mới -->
       <button @click="handleSetting" class="nav-button">
         <img src="@/assets/icons/setting.png" alt="Setting" width="18" height="18">
         <span>Setting</span>
@@ -217,10 +218,9 @@ export default {
       }
     }
 
-
+    // Xử lý điều hướng đến trang Settings - thêm mới
     const handleSetting = () => {
-      // TODO: Implement settings navigation  
-      console.log('Settings clicked')
+      router.push('/settings')
     }
 
     const navigateToFriends = () => {

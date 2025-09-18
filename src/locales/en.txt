@@ -5,7 +5,8 @@ Likes
 Comments
 Send
 Write a review...
-Like || Liked
+Like 
+Liked
 Create Post
 Discover
 Admin
@@ -16,7 +17,11 @@ Friends List
 Display name
 Biography
 Write a few lines about yourself...
-Gender (Choose gender, Male, Female, Other)
+Gender
+Choose gender
+Male
+Female
+Other
 Save
 
 /friends
@@ -27,7 +32,8 @@ Find Around
 Unfriend
 Send Invitation
 Allow location sharing
-Accept || Decline
+Accept 
+Decline
 
 /news
 Read the article
@@ -44,7 +50,8 @@ Post title
 Enter a title for your post...
 Post content
 Share your thoughts...
-Cancel || Post
+Cancel 
+Post
 
 /discover
 Top Trending
