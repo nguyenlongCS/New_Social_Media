@@ -1,0 +1,343 @@
+/*
+src/assets/dark-theme.css - Dark Theme Styles
+CSS cho Dark Mode theme - áp dụng khi body có class 'dark-theme'
+Định nghĩa màu sắc tối cho tất cả components
+*/
+
+/* Dark Theme Variables */
+.dark-theme {
+  --bg-primary: #0f0f0f;
+  --bg-secondary: #1a1a1a;
+  --bg-tertiary: #262626;
+  --bg-card: #1e1e1e;
+  --bg-hover: #2a2a2a;
+  --bg-input: #262626;
+  --bg-gradient: linear-gradient(90deg, #1e3a8a, #581c87);
+  
+  --text-primary: #ffffff;
+  --text-secondary: #e5e5e5;
+  --text-muted: #a3a3a3;
+  --text-disabled: #737373;
+  
+  --border-primary: #404040;
+  --border-secondary: #333333;
+  --border-hover: #525252;
+  
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.5);
+}
+
+/* Body & Main Background */
+.dark-theme {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+}
+
+/* Top Bar - Header */
+.dark-theme .top-bar {
+  background: var(--bg-gradient);
+  box-shadow: var(--shadow-md);
+}
+
+/* Left Menu & Right Panel */
+.dark-theme .left-menu,
+.dark-theme .right-panel,
+.dark-theme .friends-right-panel,
+.dark-theme .mess-right-panel {
+  background: var(--bg-secondary);
+  box-shadow: var(--shadow-md);
+  color: var(--text-primary);
+}
+
+.dark-theme .left-menu .nav-button {
+  color: var(--text-secondary);
+}
+
+.dark-theme .left-menu .nav-button:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+.dark-theme .left-menu .nav-button.active {
+  background: var(--bg-gradient);
+  color: white;
+}
+
+.dark-theme .left-menu hr {
+  border-color: var(--border-primary);
+}
+
+/* Posts & Cards */
+.dark-theme .post,
+.dark-theme .create-post-card,
+.dark-theme .profile-card,
+.dark-theme .settings-card,
+.dark-theme .admin-container .stat-card,
+.dark-theme .chart-container,
+.dark-theme .table-container,
+.dark-theme .friend-card,
+.dark-theme .suggestion-card,
+.dark-theme .request-card,
+.dark-theme .user-item,
+.dark-theme .conversation-item,
+.dark-theme .news-item,
+.dark-theme .discover-item {
+  background: var(--bg-card);
+  color: var(--text-primary);
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border-secondary);
+}
+
+.dark-theme .post:hover,
+.dark-theme .friend-card:hover,
+.dark-theme .suggestion-card:hover,
+.dark-theme .request-card:hover,
+.dark-theme .user-item:hover,
+.dark-theme .conversation-item:hover,
+.dark-theme .news-item:hover,
+.dark-theme .discover-item:hover {
+  box-shadow: var(--shadow-md);
+  background: var(--bg-hover);
+}
+
+/* Post Actions */
+.dark-theme .post .actions button {
+  color: var(--text-muted);
+}
+
+.dark-theme .post .actions button:hover {
+  color: var(--text-primary);
+  background: var(--bg-hover);
+}
+
+/* Form Elements */
+.dark-theme input,
+.dark-theme textarea,
+.dark-theme select,
+.dark-theme .comment-input,
+.dark-theme .message-input {
+  background: var(--bg-input);
+  border-color: var(--border-primary);
+  color: var(--text-primary);
+}
+
+.dark-theme input::placeholder,
+.dark-theme textarea::placeholder {
+  color: var(--text-muted);
+}
+
+.dark-theme input:focus,
+.dark-theme textarea:focus,
+.dark-theme select:focus {
+  border-color: #2563eb;
+  background: var(--bg-secondary);
+}
+
+/* Buttons */
+.dark-theme button {
+  color: var(--text-secondary);
+}
+
+.dark-theme .submit-btn,
+.dark-theme .save-btn,
+.dark-theme .publish-btn,
+.dark-theme .send-btn,
+.dark-theme .add-friend-btn {
+  background: var(--bg-gradient);
+  color: white;
+}
+
+.dark-theme .cancel-btn,
+.dark-theme .retry-btn,
+.dark-theme .refresh-btn {
+  background: var(--bg-tertiary);
+  border-color: var(--border-primary);
+  color: var(--text-secondary);
+}
+
+.dark-theme .cancel-btn:hover,
+.dark-theme .retry-btn:hover,
+.dark-theme .refresh-btn:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+/* Text Colors */
+.dark-theme .user-name,
+.dark-theme .post-title,
+.dark-theme .friend-card-name,
+.dark-theme .suggestion-card-name,
+.dark-theme .request-card-name,
+.dark-theme .partner-name,
+.dark-theme .page-title,
+.dark-theme .section-title,
+.dark-theme .admin-title,
+.dark-theme .chart-title {
+  color: var(--text-primary);
+}
+
+.dark-theme .timestamp,
+.dark-theme .post-content,
+.dark-theme .user-bio,
+.dark-theme .friend-card-bio,
+.dark-theme .suggestion-card-bio,
+.dark-theme .page-subtitle,
+.dark-theme .section-description {
+  color: var(--text-muted);
+}
+
+/* Borders & Dividers */
+.dark-theme .settings-section,
+.dark-theme .profile-header,
+.dark-theme .create-post-header,
+.dark-theme .admin-header,
+.dark-theme .tab-header {
+  border-color: var(--border-primary);
+}
+
+/* Tables */
+.dark-theme .admin-table {
+  background: var(--bg-card);
+}
+
+.dark-theme .admin-table th {
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+  border-color: var(--border-primary);
+}
+
+.dark-theme .admin-table td {
+  border-color: var(--border-primary);
+  color: var(--text-secondary);
+}
+
+.dark-theme .admin-table tbody tr:hover {
+  background: var(--bg-hover);
+}
+
+/* Loading States */
+.dark-theme .loading-overlay,
+.dark-theme .loading-posts,
+.dark-theme .loading-users,
+.dark-theme .loading-section {
+  background: rgba(15, 15, 15, 0.9);
+  color: var(--text-primary);
+}
+
+.dark-theme .loading-content,
+.dark-theme .loading-posts,
+.dark-theme .error-state,
+.dark-theme .empty-state {
+  color: var(--text-secondary);
+}
+
+/* Messages */
+.dark-theme .error-message {
+  background: #451a1a;
+  border-color: #7f1d1d;
+  color: #fca5a5;
+}
+
+.dark-theme .success-message {
+  background: #14532d;
+  border-color: #166534;
+  color: #86efac;
+}
+
+/* Search & Input Areas */
+.dark-theme .search-input-wrapper {
+  background: var(--bg-input);
+  border-color: var(--border-primary);
+}
+
+.dark-theme .upload-area {
+  background: var(--bg-secondary);
+  border-color: var(--border-primary);
+}
+
+.dark-theme .upload-area:hover {
+  background: var(--bg-hover);
+  border-color: #2563eb;
+}
+
+/* Notification Panel */
+.dark-theme .notification-panel {
+  background: var(--bg-card);
+  border-color: var(--border-primary);
+  box-shadow: var(--shadow-lg);
+}
+
+.dark-theme .panel-header {
+  background: var(--bg-tertiary);
+  border-color: var(--border-primary);
+}
+
+.dark-theme .notification-item {
+  border-color: var(--border-secondary);
+}
+
+.dark-theme .notification-item:hover {
+  background: var(--bg-hover);
+}
+
+.dark-theme .notification-item.unread {
+  background: var(--bg-tertiary);
+}
+
+/* Settings Specific */
+.dark-theme .language-option,
+.dark-theme .theme-option {
+  background: var(--bg-card);
+  border-color: var(--border-primary);
+}
+
+.dark-theme .language-option:hover,
+.dark-theme .theme-option:hover {
+  background: var(--bg-hover);
+  border-color: #2563eb;
+}
+
+.dark-theme .language-option.active,
+.dark-theme .theme-option.active {
+  background: var(--bg-tertiary);
+  border-color: #2563eb;
+}
+
+.dark-theme .coming-soon {
+  background: var(--bg-tertiary);
+  border-color: var(--border-primary);
+}
+
+/* Badges & Indicators */
+.dark-theme .nav-badge,
+.dark-theme .notification-badge {
+  background: #dc2626;
+}
+
+.dark-theme .role-badge.admin {
+  background: #7f1d1d;
+  color: #fca5a5;
+}
+
+.dark-theme .role-badge.user {
+  background: #1e3a8a;
+  color: #93c5fd;
+}
+
+/* Scrollbars */
+.dark-theme ::-webkit-scrollbar {
+  background: var(--bg-secondary);
+}
+
+.dark-theme ::-webkit-scrollbar-track {
+  background: var(--bg-primary);
+}
+
+.dark-theme ::-webkit-scrollbar-thumb {
+  background: var(--border-primary);
+}
+
+.dark-theme ::-webkit-scrollbar-thumb:hover {
+  background: var(--border-hover);
+}

@@ -58,6 +58,7 @@ Sử dụng LanguageManager để thực hiện global text replacement
           Đã thay đổi ngôn ngữ thành công!
         </div>
         
+        <!-- Theme Settings Section -->
         <div class="settings-section">
           <div class="section-header">
             <div class="section-icon">
@@ -65,7 +66,41 @@ Sử dụng LanguageManager để thực hiện global text replacement
             </div>
             <div class="section-info">
               <h3 class="section-title">Giao diện</h3>
-              <p class="section-description">Tùy chỉnh giao diện ứng dụng (Tính năng sắp ra mắt)</p>
+              <p class="section-description">Chọn chế độ hiển thị phù hợp với bạn</p>
+            </div>
+          </div>
+          
+          <div class="theme-options">
+            <div 
+              v-for="theme in availableThemes"
+              :key="theme.code"
+              class="theme-option"
+              :class="{ active: currentTheme === theme.code }"
+              @click="handleThemeChange(theme.code)"
+            >
+              <div class="theme-info">
+                <div class="theme-header">
+                  <span class="theme-icon">{{ theme.icon }}</span>
+                  <div class="theme-name">{{ theme.name }}</div>
+                </div>
+                <div class="theme-description">{{ theme.description }}</div>
+              </div>
+              <div v-if="currentTheme === theme.code" class="theme-selected">
+                <div class="check-icon">✓</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Other Settings Sections -->
+        <div class="settings-section">
+          <div class="section-header">
+            <div class="section-icon">
+              <img src="@/assets/icons/notification.png" alt="Notifications" width="24" height="24">
+            </div>
+            <div class="section-info">
+              <h3 class="section-title">Thông báo</h3>
+              <p class="section-description">Quản lý cài đặt thông báo (Tính năng sắp ra mắt)</p>
             </div>
           </div>
           
@@ -88,6 +123,7 @@ import Header from '../components/Header.vue'
 import LeftSide from '../components/LeftSide.vue'
 import { useAuthUser } from '../composables/useAuthUser'
 import languageManager from '../utils/languageManager'
+import themeManager from '../utils/themeManager'
 
 export default {
   name: 'SettingsView',
@@ -99,6 +135,8 @@ export default {
     const { isAuthLoading } = useAuthUser()
     const currentLanguage = ref(languageManager.getCurrentLanguage())
     const availableLanguages = ref(languageManager.getAvailableLanguages())
+    const currentTheme = ref(themeManager.getCurrentTheme())
+    const availableThemes = ref(themeManager.getAvailableThemes())
     const showSuccessMessage = ref(false)
     
     // Xử lý thay đổi ngôn ngữ
@@ -118,18 +156,39 @@ export default {
       }, 3000)
     }
     
-    // Khởi tạo ngôn ngữ khi component mount
+    // Xử lý thay đổi theme
+    const handleThemeChange = (themeCode) => {
+      if (themeCode === currentTheme.value) return
+      
+      // Cập nhật theme qua ThemeManager
+      themeManager.setTheme(themeCode)
+      currentTheme.value = themeCode
+      
+      // Hiển thị thông báo thành công
+      showSuccessMessage.value = true
+      
+      // Tự động ẩn thông báo sau 3 giây
+      setTimeout(() => {
+        showSuccessMessage.value = false
+      }, 3000)
+    }
+    
+    // Khởi tạo khi component mount
     onMounted(() => {
-      // Áp dụng ngôn ngữ đã lưu
+      // Áp dụng ngôn ngữ và theme đã lưu
       languageManager.translatePage()
+      themeManager.applyTheme(themeManager.getCurrentTheme())
     })
     
     return {
       isAuthLoading,
       currentLanguage,
       availableLanguages,
+      currentTheme,
+      availableThemes,
       showSuccessMessage,
-      handleLanguageChange
+      handleLanguageChange,
+      handleThemeChange
     }
   }
 }
@@ -319,6 +378,68 @@ export default {
   color: #6b7280;
   font-size: 0.875rem;
   font-weight: 500;
+}
+
+.theme-options {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.theme-option {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.75rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  background: white;
+}
+
+.theme-option:hover {
+  border-color: #2563eb;
+  background: #f8fafc;
+}
+
+.theme-option.active {
+  border-color: #2563eb;
+  background: #eff6ff;
+}
+
+.theme-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.theme-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.theme-icon {
+  font-size: 1.25rem;
+}
+
+.theme-name {
+  font-size: 0.9375rem;
+  font-weight: 500;
+  color: #1e293b;
+}
+
+.theme-description {
+  font-size: 0.75rem;
+  color: #6b7280;
+  line-height: 1.3;
+}
+
+.theme-selected {
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 @media (max-width: 768px) {
