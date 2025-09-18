@@ -438,7 +438,6 @@ export default {
   justify-content: center;
   gap: 8px;
   padding: 16px;
-  background: white;
 }
 
 .dot {

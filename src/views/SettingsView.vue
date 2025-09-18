@@ -91,23 +91,6 @@ Sử dụng LanguageManager để thực hiện global text replacement
             </div>
           </div>
         </div>
-        
-        <!-- Other Settings Sections -->
-        <div class="settings-section">
-          <div class="section-header">
-            <div class="section-icon">
-              <img src="@/assets/icons/notification.png" alt="Notifications" width="24" height="24">
-            </div>
-            <div class="section-info">
-              <h3 class="section-title">Thông báo</h3>
-              <p class="section-description">Quản lý cài đặt thông báo (Tính năng sắp ra mắt)</p>
-            </div>
-          </div>
-          
-          <div class="coming-soon">
-            <span class="coming-soon-text">Sắp ra mắt</span>
-          </div>
-        </div>
       </div>
     </div>
 
@@ -255,7 +238,6 @@ export default {
 .section-icon {
   width: 48px;
   height: 48px;
-  background: #f8fafc;
   border-radius: 12px;
   display: flex;
   align-items: center;

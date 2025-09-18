@@ -289,7 +289,6 @@ export default {
   width: 40px;
   height: 40px;
   border-radius: 50%;
-  background: #f1f5f9;
   display: flex;
   align-items: center;
   justify-content: center;

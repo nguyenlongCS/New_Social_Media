@@ -258,7 +258,6 @@ export default {
   margin-bottom: 0.75rem;
   padding: 0.5rem;
   border-radius: 0.375rem;
-  background: #f8fafc;
 }
 
 .comment-avatar {

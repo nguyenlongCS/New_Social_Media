@@ -1,7 +1,9 @@
 /*
-src/assets/dark-theme.css - Dark Theme Styles
+src/assets/dark-theme.css - Dark Theme Styles - Complete Version
 CSS cho Dark Mode theme - áp dụng khi body có class 'dark-theme'
-Định nghĩa màu sắc tối cho tất cả components
+Định nghĩa màu sắc tối cho TẤT CẢ components
+Chuyển đổi toàn bộ text sang màu trắng/sáng
+Filter icons PNG sang màu trắng phù hợp
 */
 
 /* Dark Theme Variables */
@@ -34,10 +36,35 @@ CSS cho Dark Mode theme - áp dụng khi body có class 'dark-theme'
   color: var(--text-primary);
 }
 
+/* Tất cả text elements */
+.dark-theme * {
+  color: var(--text-primary);
+}
+
 /* Top Bar - Header */
 .dark-theme .top-bar {
   background: var(--bg-gradient);
   box-shadow: var(--shadow-md);
+}
+
+.dark-theme .top-bar .logo {
+  color: white !important;
+}
+
+/* Icons PNG - chuyển sang màu trắng */
+.dark-theme img[src*=".png"] {
+  filter: brightness(0) invert(1);
+}
+
+/* Giữ avatar và images content không bị filter */
+.dark-theme .avatar-image,
+.dark-theme .user-avatar,
+.dark-theme .preview-image,
+.dark-theme .single-media-image,
+.dark-theme .carousel-media-image,
+.dark-theme .news-image,
+.dark-theme .media-image {
+  filter: none !important;
 }
 
 /* Left Menu & Right Panel */
@@ -47,7 +74,6 @@ CSS cho Dark Mode theme - áp dụng khi body có class 'dark-theme'
 .dark-theme .mess-right-panel {
   background: var(--bg-secondary);
   box-shadow: var(--shadow-md);
-  color: var(--text-primary);
 }
 
 .dark-theme .left-menu .nav-button {
@@ -84,7 +110,6 @@ CSS cho Dark Mode theme - áp dụng khi body có class 'dark-theme'
 .dark-theme .news-item,
 .dark-theme .discover-item {
   background: var(--bg-card);
-  color: var(--text-primary);
   box-shadow: var(--shadow-sm);
   border: 1px solid var(--border-secondary);
 }
@@ -111,6 +136,10 @@ CSS cho Dark Mode theme - áp dụng khi body có class 'dark-theme'
   background: var(--bg-hover);
 }
 
+.dark-theme .post .actions button.liked {
+  color: #ef4444;
+}
+
 /* Form Elements */
 .dark-theme input,
 .dark-theme textarea,
@@ -132,6 +161,7 @@ CSS cho Dark Mode theme - áp dụng khi body có class 'dark-theme'
 .dark-theme select:focus {
   border-color: #2563eb;
   background: var(--bg-secondary);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2);
 }
 
 /* Buttons */
@@ -143,27 +173,51 @@ CSS cho Dark Mode theme - áp dụng khi body có class 'dark-theme'
 .dark-theme .save-btn,
 .dark-theme .publish-btn,
 .dark-theme .send-btn,
-.dark-theme .add-friend-btn {
+.dark-theme .add-friend-btn,
+.dark-theme .get-location-btn,
+.dark-theme .refresh-btn,
+.dark-theme .accept-btn {
   background: var(--bg-gradient);
   color: white;
+  border-color: transparent;
+}
+
+.dark-theme .submit-btn:hover:not(:disabled),
+.dark-theme .save-btn:hover:not(:disabled),
+.dark-theme .publish-btn:hover:not(:disabled),
+.dark-theme .send-btn:hover:not(:disabled),
+.dark-theme .add-friend-btn:hover:not(:disabled),
+.dark-theme .get-location-btn:hover:not(:disabled),
+.dark-theme .refresh-btn:hover:not(:disabled),
+.dark-theme .accept-btn:hover:not(:disabled) {
+  opacity: 0.9;
 }
 
 .dark-theme .cancel-btn,
 .dark-theme .retry-btn,
-.dark-theme .refresh-btn {
+.dark-theme .reject-btn,
+.dark-theme .unfriend-btn {
   background: var(--bg-tertiary);
   border-color: var(--border-primary);
   color: var(--text-secondary);
 }
 
-.dark-theme .cancel-btn:hover,
-.dark-theme .retry-btn:hover,
-.dark-theme .refresh-btn:hover {
+.dark-theme .cancel-btn:hover:not(:disabled),
+.dark-theme .retry-btn:hover:not(:disabled),
+.dark-theme .reject-btn:hover:not(:disabled),
+.dark-theme .unfriend-btn:hover:not(:disabled) {
   background: var(--bg-hover);
   color: var(--text-primary);
 }
 
-/* Text Colors */
+/* Text Colors - tất cả heading và labels */
+.dark-theme h1,
+.dark-theme h2,
+.dark-theme h3,
+.dark-theme h4,
+.dark-theme h5,
+.dark-theme h6,
+.dark-theme label,
 .dark-theme .user-name,
 .dark-theme .post-title,
 .dark-theme .friend-card-name,
@@ -173,18 +227,34 @@ CSS cho Dark Mode theme - áp dụng khi body có class 'dark-theme'
 .dark-theme .page-title,
 .dark-theme .section-title,
 .dark-theme .admin-title,
-.dark-theme .chart-title {
-  color: var(--text-primary);
+.dark-theme .chart-title,
+.dark-theme .panel-title,
+.dark-theme .tab-header h2,
+.dark-theme .friends-title,
+.dark-theme .friend-name,
+.dark-theme .user-email,
+.dark-theme .language-name,
+.dark-theme .theme-name {
+  color: var(--text-primary) !important;
 }
 
+/* Muted text elements */
 .dark-theme .timestamp,
 .dark-theme .post-content,
 .dark-theme .user-bio,
 .dark-theme .friend-card-bio,
 .dark-theme .suggestion-card-bio,
 .dark-theme .page-subtitle,
-.dark-theme .section-description {
-  color: var(--text-muted);
+.dark-theme .section-description,
+.dark-theme .subtitle,
+.dark-theme .admin-subtitle,
+.dark-theme .date-cell,
+.dark-theme .comment-content,
+.dark-theme .last-message,
+.dark-theme .notifications-count,
+.dark-theme .language-code,
+.dark-theme .theme-description {
+  color: var(--text-muted) !important;
 }
 
 /* Borders & Dividers */
@@ -192,7 +262,10 @@ CSS cho Dark Mode theme - áp dụng khi body có class 'dark-theme'
 .dark-theme .profile-header,
 .dark-theme .create-post-header,
 .dark-theme .admin-header,
-.dark-theme .tab-header {
+.dark-theme .tab-header,
+.dark-theme .discover-header,
+.dark-theme .divider,
+.dark-theme .form-actions {
   border-color: var(--border-primary);
 }
 
@@ -220,19 +293,22 @@ CSS cho Dark Mode theme - áp dụng khi body có class 'dark-theme'
 .dark-theme .loading-overlay,
 .dark-theme .loading-posts,
 .dark-theme .loading-users,
-.dark-theme .loading-section {
-  background: rgba(15, 15, 15, 0.9);
-  color: var(--text-primary);
+.dark-theme .loading-section,
+.dark-theme .loading-news,
+.dark-theme .loading-messages {
+  background: rgba(15, 15, 15, 0.95);
 }
 
 .dark-theme .loading-content,
-.dark-theme .loading-posts,
+.dark-theme .loading-posts p,
 .dark-theme .error-state,
-.dark-theme .empty-state {
+.dark-theme .empty-state,
+.dark-theme .no-comments p,
+.dark-theme .no-conversations p {
   color: var(--text-secondary);
 }
 
-/* Messages */
+/* Messages States */
 .dark-theme .error-message {
   background: #451a1a;
   border-color: #7f1d1d;
@@ -251,6 +327,11 @@ CSS cho Dark Mode theme - áp dụng khi body có class 'dark-theme'
   border-color: var(--border-primary);
 }
 
+.dark-theme .search-input {
+  background: transparent;
+  color: var(--text-primary);
+}
+
 .dark-theme .upload-area {
   background: var(--bg-secondary);
   border-color: var(--border-primary);
@@ -261,8 +342,19 @@ CSS cho Dark Mode theme - áp dụng khi body có class 'dark-theme'
   border-color: #2563eb;
 }
 
+.dark-theme .upload-placeholder h3,
+.dark-theme .upload-placeholder p {
+  color: var(--text-secondary);
+}
+
 /* Notification Panel */
 .dark-theme .notification-panel {
+  background: var(--bg-card);
+  border-color: var(--border-primary);
+  box-shadow: var(--shadow-lg);
+}
+
+.dark-theme .panel-footer {
   background: var(--bg-card);
   border-color: var(--border-primary);
   box-shadow: var(--shadow-lg);
@@ -285,7 +377,15 @@ CSS cho Dark Mode theme - áp dụng khi body có class 'dark-theme'
   background: var(--bg-tertiary);
 }
 
-/* Settings Specific */
+.dark-theme .notification-message {
+  color: var(--text-primary);
+}
+
+.dark-theme .notification-time {
+  color: var(--text-muted);
+}
+
+/* Settings Page */
 .dark-theme .language-option,
 .dark-theme .theme-option {
   background: var(--bg-card);
@@ -309,10 +409,111 @@ CSS cho Dark Mode theme - áp dụng khi body có class 'dark-theme'
   border-color: var(--border-primary);
 }
 
+.dark-theme .coming-soon-text {
+  color: var(--text-muted);
+}
+
+/* Profile Page */
+.dark-theme .default-avatar {
+  background: linear-gradient(135deg, #4338ca, #7c3aed);
+  color: white;
+  border-color: var(--border-primary);
+}
+
+.dark-theme .camera-overlay {
+  background: #2563eb;
+  border-color: var(--bg-card);
+}
+
+.dark-theme .camera-overlay:hover:not(.disabled) {
+  background: #1d4ed8;
+}
+
+/* Messages View */
+.dark-theme .messages-container {
+  background: var(--bg-primary);
+}
+
+.dark-theme .chat-header {
+  background: var(--bg-secondary);
+  border-color: var(--border-primary);
+}
+
+.dark-theme .message-text {
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+}
+
+.dark-theme .own-message .message-text {
+  background: var(--bg-gradient);
+  color: white;
+}
+
+.dark-theme .message-input-container {
+  background: var(--bg-tertiary);
+}
+
+.dark-theme .message-info {
+  color: var(--text-muted);
+}
+
+/* Discover View */
+.dark-theme .trending-section .section-title {
+  color: var(--text-primary);
+}
+
+.dark-theme .post-info-overlay {
+  background: linear-gradient(transparent, rgba(0, 0, 0, 0.9));
+}
+
+.dark-theme .hover-overlay {
+  background: rgba(0, 0, 0, 0.95);
+  color: white;
+}
+
+/* Admin View */
+.dark-theme .admin-tabs {
+  background: var(--bg-card);
+  color: var(--text-primary);
+}
+
+.dark-theme .access-denied-content {
+  background: var(--bg-card);
+  color: var(--text-primary);
+}
+
+.dark-theme .tab-btn {
+  background: transparent;
+  color: var(--text-muted);
+}
+
+.dark-theme .tab-btn:hover:not(.active) {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+.dark-theme .tab-btn.active {
+  background: var(--bg-gradient);
+  color: white;
+}
+
+.dark-theme .stat-icon {
+  background: var(--bg-tertiary);
+}
+
+.dark-theme .stat-number {
+  color: var(--text-primary);
+}
+
+.dark-theme .stat-label {
+  color: var(--text-muted);
+}
+
 /* Badges & Indicators */
 .dark-theme .nav-badge,
 .dark-theme .notification-badge {
   background: #dc2626;
+  color: white;
 }
 
 .dark-theme .role-badge.admin {
@@ -323,6 +524,131 @@ CSS cho Dark Mode theme - áp dụng khi body có class 'dark-theme'
 .dark-theme .role-badge.user {
   background: #1e3a8a;
   color: #93c5fd;
+}
+
+.dark-theme .unread-indicator {
+  background: #dc2626;
+  border-color: var(--bg-card);
+}
+
+.dark-theme .online-indicator {
+  background: #16a34a;
+  border-color: var(--bg-card);
+}
+
+/* Friends View */
+.dark-theme .friends-container {
+  background: var(--bg-primary);
+}
+
+.dark-theme .section-btn {
+  background: transparent;
+  color: var(--text-muted);
+}
+
+.dark-theme .section-btn:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+.dark-theme .section-btn.active {
+  background: var(--bg-gradient);
+  color: white;
+}
+
+/* News View */
+.dark-theme .news-container {
+  background: var(--bg-primary);
+}
+
+.dark-theme .read-more-btn {
+  background: var(--bg-tertiary);
+  color: var(--text-secondary);
+  border-color: var(--border-primary);
+}
+
+.dark-theme .read-more-btn:hover {
+  background: #2563eb;
+  color: white;
+  border-color: #2563eb;
+}
+
+/* Create Post View */
+.dark-theme .create-post-container {
+  background: var(--bg-primary);
+}
+
+.dark-theme .media-preview {
+  background: var(--bg-secondary);
+}
+
+.dark-theme .media-item {
+  background: var(--bg-tertiary);
+}
+
+.dark-theme .remove-media {
+  background: rgba(0, 0, 0, 0.8);
+}
+
+.dark-theme .remove-media:hover {
+  background: rgba(0, 0, 0, 0.95);
+}
+
+.dark-theme .media-counter {
+  color: var(--text-muted);
+}
+
+.dark-theme .add-more-btn {
+  background: var(--bg-tertiary);
+  color: var(--text-secondary);
+  border-color: var(--border-primary);
+}
+
+.dark-theme .add-more-btn:hover:not(:disabled) {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+.dark-theme .char-counter {
+  color: var(--text-muted);
+}
+
+/* Progress Bars */
+.dark-theme .progress-bar {
+  background: var(--bg-tertiary);
+}
+
+.dark-theme .progress-fill {
+  background: var(--bg-gradient);
+}
+
+.dark-theme .progress-text {
+  color: var(--text-muted);
+}
+
+.dark-theme .sync-progress-bar {
+  background: var(--bg-tertiary);
+}
+
+.dark-theme .sync-progress-fill {
+  background: var(--bg-gradient);
+}
+
+.dark-theme .sync-status-card {
+  background: var(--bg-tertiary);
+  border-color: var(--border-primary);
+}
+
+.dark-theme .sync-status-text {
+  color: var(--text-muted);
+}
+
+/* Spinners */
+.dark-theme .spinner,
+.dark-theme .spinner-small,
+.dark-theme .loading-spinner {
+  border-color: var(--border-primary);
+  border-top-color: #2563eb;
 }
 
 /* Scrollbars */
@@ -336,8 +662,636 @@ CSS cho Dark Mode theme - áp dụng khi body có class 'dark-theme'
 
 .dark-theme ::-webkit-scrollbar-thumb {
   background: var(--border-primary);
+  border-radius: 4px;
 }
 
 .dark-theme ::-webkit-scrollbar-thumb:hover {
   background: var(--border-hover);
+}
+
+/* Map Container */
+.dark-theme .map-container {
+  border-color: var(--border-primary);
+}
+
+.dark-theme .map-info {
+  background: var(--bg-card);
+  color: var(--text-primary);
+  box-shadow: var(--shadow-md);
+}
+
+/* Touch Component */
+.dark-theme .assistive-touch .touch-button {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.dark-theme .assistive-touch .menu-item {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.dark-theme .assistive-touch .menu-item:hover {
+  background: var(--bg-card);
+}
+
+/* Video elements */
+.dark-theme video {
+  background: var(--bg-tertiary);
+}
+
+/* Đảm bảo tất cả icon action không bị đảo màu */
+.dark-theme .nav-icon img,
+.dark-theme .section-icon img,
+.dark-theme .stat-icon img {
+  filter: brightness(0) invert(1);
+  opacity: 0.9;
+}
+
+/* Icon đặc biệt giữ màu gốc */
+.dark-theme .trending-icon,
+.dark-theme .theme-icon,
+.dark-theme .no-users-icon,
+.dark-theme .empty-icon,
+.dark-theme .heart-icon,
+.dark-theme .time-icon {
+  filter: none !important;
+}
+
+/* Default avatars với gradient đẹp */
+.dark-theme .default-card-avatar,
+.dark-theme .default-comment-avatar,
+.dark-theme .avatar-placeholder {
+  background: linear-gradient(135deg, #4338ca, #7c3aed);
+  color: white;
+}
+
+/* Tối ưu độ tương phản cho dark mode */
+.dark-theme {
+  font-weight: 300;
+  letter-spacing: 0.01em;
+}
+
+.dark-theme strong,
+.dark-theme b {
+  font-weight: 600;
+}
+
+/* Focus states cho accessibility */
+.dark-theme *:focus-visible {
+  outline: 2px solid #2563eb;
+  outline-offset: 2px;
+}
+
+/* Transitions cho smooth theme switching */
+.dark-theme,
+.dark-theme * {
+  transition: background-color 0.3s ease, 
+              border-color 0.3s ease, 
+              color 0.3s ease;
+}
+
+/* =================================== */
+/* CÁC PHẦN BỔ SUNG CHƯA CHUYỂN DARK */
+/* =================================== */
+
+/* HomeView - Phần container không có component */
+.dark-theme .home-view {
+  background: var(--bg-primary);
+}
+
+.dark-theme .home-view .flex {
+  background: var(--bg-primary);
+}
+
+/* Main Feed container */
+.dark-theme .main-feed {
+  background: transparent;
+}
+
+/* MessagesView - Phần no-conversation và messages-area */
+.dark-theme .mess-main {
+  background: var(--bg-card);
+  border-color: var(--border-primary);
+}
+
+.dark-theme .messages-area {
+  background: var(--bg-secondary);
+}
+
+.dark-theme .no-conversation {
+  background: var(--bg-secondary);
+  color: var(--text-secondary);
+}
+
+.dark-theme .no-conversation h3 {
+  color: var(--text-primary);
+}
+
+.dark-theme .no-conversation p {
+  color: var(--text-muted);
+}
+
+.dark-theme .no-conversation-icon {
+  opacity: 0.3;
+}
+
+.dark-theme .messages-list {
+  background: var(--bg-secondary);
+}
+
+.dark-theme .message-form {
+  background: var(--bg-tertiary);
+  border-color: var(--border-primary);
+}
+
+.dark-theme .file-preview {
+  background: var(--bg-tertiary);
+}
+
+/* DiscoverView - discover-container */
+.dark-theme .discover-view {
+  background: var(--bg-primary);
+}
+
+.dark-theme .discover-container {
+  background: var(--bg-primary);
+}
+
+.dark-theme .discover-header {
+  border-color: var(--border-primary);
+}
+
+.dark-theme .posts-grid {
+  background: transparent;
+}
+
+.dark-theme .trending-section,
+.dark-theme .all-posts-section {
+  background: transparent;
+}
+
+/* LoginView - Trang login KHÔNG áp dụng dark theme */
+/* Login giữ nguyên gradient tím đẹp - Override mọi dark theme */
+.dark-theme .login-container {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+}
+
+.dark-theme .login-container * {
+  transition: none !important;
+}
+
+.dark-theme .login-container .login-wrapper {
+  background: transparent !important;
+}
+
+.dark-theme .login-container .login-card {
+  background: white !important;
+  color: #1e293b !important;
+  box-shadow: 0 1rem 3rem rgba(0, 0, 0, 0.175) !important;
+}
+
+.dark-theme .login-container .login-header {
+  background: transparent !important;
+}
+
+.dark-theme .login-container .logo {
+  background: linear-gradient(90deg, #2563eb, #7c3aed) !important;
+  -webkit-background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+}
+
+.dark-theme .login-container .subtitle {
+  color: #6b7280 !important;
+}
+
+.dark-theme .login-container .tab-buttons {
+  background: #f1f5f9 !important;
+}
+
+.dark-theme .login-container .tab-buttons button {
+  background: transparent !important;
+  color: #64748b !important;
+}
+
+.dark-theme .login-container .tab-buttons button.active {
+  background: white !important;
+  color: #1e293b !important;
+  box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075) !important;
+}
+
+.dark-theme .login-container .form-group label {
+  color: #374151 !important;
+  font-weight: 500 !important;
+}
+
+.dark-theme .login-container input,
+.dark-theme .login-container textarea,
+.dark-theme .login-container select {
+  background: white !important;
+  color: #1e293b !important;
+  border: 1px solid #d1d5db !important;
+}
+
+.dark-theme .login-container input::placeholder,
+.dark-theme .login-container textarea::placeholder {
+  color: #9ca3af !important;
+}
+
+.dark-theme .login-container input:focus,
+.dark-theme .login-container textarea:focus,
+.dark-theme .login-container select:focus {
+  background: white !important;
+  border-color: #2563eb !important;
+  box-shadow: 0 0 0 0.1875rem rgba(37, 99, 235, 0.1) !important;
+}
+
+.dark-theme .login-container .checkbox-label {
+  color: #374151 !important;
+}
+
+.dark-theme .login-container .forgot-password {
+  color: #2563eb !important;
+  background: transparent !important;
+}
+
+.dark-theme .login-container .submit-btn {
+  background: linear-gradient(90deg, #2563eb, #7c3aed) !important;
+  color: white !important;
+  border: none !important;
+}
+
+.dark-theme .login-container .submit-btn:hover {
+  opacity: 0.9 !important;
+}
+
+.dark-theme .login-container .submit-btn:disabled {
+  opacity: 0.6 !important;
+}
+
+.dark-theme .login-container .divider {
+  background: transparent !important;
+}
+
+.dark-theme .login-container .divider::before {
+  background: #e5e7eb !important;
+}
+
+.dark-theme .login-container .divider span {
+  background: white !important;
+  color: #6b7280 !important;
+}
+
+.dark-theme .login-container .social-btn {
+  background: white !important;
+  border: 1px solid #d1d5db !important;
+  color: #374151 !important;
+}
+
+.dark-theme .login-container .social-btn:hover {
+  background: #f9fafb !important;
+  border-color: #9ca3af !important;
+}
+
+.dark-theme .login-container .facebook-btn {
+  color: #1877f2 !important;
+}
+
+.dark-theme .login-container .facebook-btn:hover {
+  background: #f0f6ff !important;
+  border-color: #1877f2 !important;
+}
+
+.dark-theme .login-container .google-btn {
+  color: #4285f4 !important;
+}
+
+.dark-theme .login-container .google-btn:hover {
+  background: #f0f6ff !important;
+  border-color: #4285f4 !important;
+}
+
+.dark-theme .login-container .error-message {
+  background: #fef2f2 !important;
+  color: #dc2626 !important;
+  border: 1px solid #fecaca !important;
+}
+
+.dark-theme .login-container .success-message {
+  background: #f0fdf4 !important;
+  color: #16a34a !important;
+  border: 1px solid #bbf7d0 !important;
+}
+
+/* Đảm bảo icons trong login không bị đảo màu */
+.dark-theme .login-container img[src*=".png"] {
+  filter: none !important;
+}
+
+/* Video bên phải cũng giữ nguyên */
+.dark-theme .login-container .intro-video {
+  background: transparent !important;
+}
+
+.dark-theme .login-container .intro-video video {
+  filter: none !important;
+  background: transparent !important;
+}
+
+/* Đảm bảo tất cả text trong login card giữ màu gốc */
+.dark-theme .login-container h1,
+.dark-theme .login-container h2,
+.dark-theme .login-container h3,
+.dark-theme .login-container h4,
+.dark-theme .login-container p,
+.dark-theme .login-container span,
+.dark-theme .login-container label,
+.dark-theme .login-container button {
+  color: inherit !important;
+}
+
+/* Override lại rule chung cho tất cả elements */
+.dark-theme .login-view *,
+.dark-theme .login-container * {
+  color: inherit !important;
+}
+
+/* =================================== */
+/* CÁC PHẦN KHÁC CẦN ĐIỀU CHỈNH THÊM */
+/* =================================== */
+
+/* FriendsView - Main container background */
+.dark-theme .friends-view {
+  background: var(--bg-primary);
+}
+
+.dark-theme .friends-main {
+  background: transparent;
+}
+
+/* NewsView - Container background */
+.dark-theme .news-view {
+  background: var(--bg-primary);
+}
+
+/* AdminView - Container background */
+.dark-theme .admin-view {
+  background: var(--bg-primary);
+}
+
+.dark-theme .admin-container {
+  background: transparent;
+}
+
+/* ProfileView - Container background */
+.dark-theme .profile-view {
+  background: var(--bg-primary);
+}
+
+.dark-theme .profile-container {
+  background: transparent;
+}
+
+/* SettingsView - Container background */
+.dark-theme .settings-view {
+  background: var(--bg-primary);
+}
+
+.dark-theme .settings-container {
+  background: transparent;
+}
+
+/* CreatePostView - Container background */
+.dark-theme .create-post-view {
+  background: var(--bg-primary);
+}
+
+.dark-theme .create-post-container {
+  background: transparent;
+}
+
+/* Nearby Users - Map và các elements */
+.dark-theme .nearby-users {
+  background: transparent;
+}
+
+.dark-theme .location-request,
+.dark-theme .permission-denied,
+.dark-theme .error-state {
+  background: transparent;
+}
+
+.dark-theme .request-content,
+.dark-theme .denied-content,
+.dark-theme .error-content {
+  background: var(--bg-card);
+  border-radius: 1rem;
+  padding: 2rem;
+}
+
+.dark-theme .denied-content ul {
+  color: var(--text-muted);
+}
+
+/* Touch Component - Điều chỉnh thêm */
+.dark-theme .assistive-touch .touch-button::before {
+  background: var(--text-primary);
+}
+
+/* =================================== */
+/* RIGHTSIDE - PHẦN BÌNH LUẬN */
+/* =================================== */
+
+/* RightSide Panel - Container chính */
+.dark-theme .right-panel {
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+}
+
+/* Post details section */
+.dark-theme .right-panel .post-details {
+  background: transparent;
+  color: var(--text-primary);
+}
+
+.dark-theme .right-panel .post-title {
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+.dark-theme .right-panel .post-content {
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+.dark-theme .right-panel hr {
+  border-color: var(--border-primary);
+  opacity: 0.5;
+}
+
+.dark-theme .right-panel .likes {
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+/* Comments section */
+.dark-theme .right-panel .comments-title {
+  color: var(--text-primary);
+  font-weight: 600;
+  margin-bottom: 1rem;
+}
+
+/* Comments list */
+.dark-theme .right-panel .comments-list {
+  background: transparent;
+}
+
+/* Individual comment */
+.dark-theme .right-panel .comment {
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-secondary);
+  padding: 0.75rem;
+  border-radius: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.dark-theme .right-panel .comment:hover {
+  background: var(--bg-hover);
+  border-color: var(--border-hover);
+}
+
+/* Comment avatar */
+.dark-theme .right-panel .comment-avatar {
+  border: 2px solid var(--border-primary);
+}
+
+.dark-theme .right-panel .default-comment-avatar {
+  background: linear-gradient(135deg, #4338ca, #7c3aed);
+  color: white;
+  font-weight: 600;
+}
+
+/* Comment content */
+.dark-theme .right-panel .comment-user {
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+.dark-theme .right-panel .comment-text {
+  color: var(--text-secondary);
+  line-height: 1.4;
+}
+
+/* No comments state */
+.dark-theme .right-panel .no-comments {
+  background: var(--bg-tertiary);
+  border: 1px dashed var(--border-primary);
+  border-radius: 0.5rem;
+  padding: 2rem 1rem;
+}
+
+.dark-theme .right-panel .no-comments p {
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+/* Loading comments */
+.dark-theme .right-panel .loading-comments {
+  background: transparent;
+}
+
+.dark-theme .right-panel .loading-comments p {
+  color: var(--text-muted);
+}
+
+.dark-theme .right-panel .spinner-small {
+  border-color: var(--border-primary);
+  border-top-color: #2563eb;
+}
+
+/* Comment input section */
+.dark-theme .right-panel .comment-input-section {
+  background: var(--bg-secondary);
+  border-top: 1px solid var(--border-primary);
+  padding-top: 1rem;
+}
+
+/* Comment error message */
+.dark-theme .right-panel .comment-error {
+  background: #451a1a;
+  border-color: #7f1d1d;
+  color: #fca5a5;
+}
+
+/* Comment input container */
+.dark-theme .right-panel .comment-input-container {
+  background: transparent;
+}
+
+/* Comment input field */
+.dark-theme .right-panel .comment-input {
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-primary);
+  color: var(--text-primary);
+}
+
+.dark-theme .right-panel .comment-input::placeholder {
+  color: var(--text-muted);
+  opacity: 0.7;
+}
+
+.dark-theme .right-panel .comment-input:focus {
+  background: var(--bg-input);
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2);
+}
+
+.dark-theme .right-panel .comment-input:disabled {
+  background: var(--bg-tertiary);
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Send comment button */
+.dark-theme .right-panel .send-comment-btn {
+  background: linear-gradient(90deg, #2563eb, #7c3aed);
+  color: white;
+  border: none;
+}
+
+.dark-theme .right-panel .send-comment-btn:hover:not(:disabled) {
+  opacity: 0.9;
+  transform: scale(1.05);
+}
+
+.dark-theme .right-panel .send-comment-btn:disabled {
+  background: var(--bg-tertiary);
+  color: var(--text-disabled);
+  opacity: 0.6;
+}
+
+/* Scrollbar cho comments list */
+.dark-theme .right-panel .comments-list::-webkit-scrollbar {
+  width: 4px;
+}
+
+.dark-theme .right-panel .comments-list::-webkit-scrollbar-track {
+  background: var(--bg-secondary);
+  border-radius: 2px;
+}
+
+.dark-theme .right-panel .comments-list::-webkit-scrollbar-thumb {
+  background: var(--border-primary);
+  border-radius: 2px;
+}
+
+.dark-theme .right-panel .comments-list::-webkit-scrollbar-thumb:hover {
+  background: var(--border-hover);
+}
+
+/* Khi chưa chọn post */
+.dark-theme .right-panel h3 {
+  color: var(--text-primary);
+}
+
+.dark-theme .right-panel p {
+  color: var(--text-muted);
 }
