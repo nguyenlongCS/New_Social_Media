@@ -62,12 +62,12 @@ Trang tạo bài viết mới với auth user state management cải tiến
         <!-- Post Content Form -->
         <form @submit.prevent="handleCreatePost" class="post-form">
           <div class="form-group">
-            <label for="caption">Tiêu đề bài viết</label>
+            <label for="caption">Post Title</label>
             <input 
               id="caption"
               type="text" 
               v-model="postData.caption"
-              placeholder="Nhập tiêu đề cho bài viết của bạn..."
+              placeholder="Enter a title for your post..."
               maxlength="200"
               required
             >
@@ -75,11 +75,11 @@ Trang tạo bài viết mới với auth user state management cải tiến
           </div>
           
           <div class="form-group">
-            <label for="content">Nội dung bài viết</label>
+            <label for="content">Post content</label>
             <textarea 
               id="content"
               v-model="postData.content"
-              placeholder="Chia sẻ suy nghĩ của bạn..."
+              placeholder="Share your thoughts..."
               rows="5"
               maxlength="2000"
               required
@@ -100,12 +100,12 @@ Trang tạo bài viết mới với auth user state management cải tiến
           <!-- Form actions -->
           <div class="form-actions">
             <button type="button" @click="resetForm" class="cancel-btn" :disabled="isUploading">
-              Hủy bỏ
+              Cancel
             </button>
             <button type="submit" :disabled="isUploading || selectedFiles.length === 0 || !isLoggedIn" class="publish-btn">
               <span v-if="isUploading">Đang đăng bài...</span>
               <span v-else-if="!isLoggedIn">Chưa đăng nhập</span>
-              <span v-else>Đăng bài viết</span>
+              <span v-else>Post</span>
             </button>
           </div>
         </form>

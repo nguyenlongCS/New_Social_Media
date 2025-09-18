@@ -33,7 +33,7 @@ Kiểm tra quyền admin và hiển thị button tương ứng
     <div class="friends-section">
       <div class="friends-header">
         <h3 class="friends-title">
-          Bạn bè
+          Friends List
           <span class="friends-count" v-if="!isLoadingFriends">({{ friendsList.length }})</span>
         </h3>
       </div>

@@ -28,7 +28,7 @@ Click để mở bài báo ngoài
       <div class="news-footer">
         <button class="read-more-btn">
           <img src="@/assets/icons/discover.png" alt="Read" class="btn-icon">
-          <span>Đọc bài viết</span>
+          <span>Read the article</span>
         </button>
       </div>
     </div>

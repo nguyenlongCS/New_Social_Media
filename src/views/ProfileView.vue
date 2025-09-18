@@ -77,39 +77,39 @@ Trang profile người dùng với data sync status và progress indicator - Ful
         <!-- Profile Form -->
         <form @submit.prevent="handleSaveProfile" class="profile-form">
           <div class="form-group">
-            <label for="username">Tên hiển thị</label>
+            <label for="username">Display Name</label>
             <input 
               id="username"
               type="text" 
               v-model="profileData.UserName"
-              placeholder="Nhập tên hiển thị"
+              placeholder="Enter a display name"
               :disabled="isSaving || isSyncing"
               required
             >
           </div>
           
           <div class="form-group">
-            <label for="bio">Giới thiệu bản thân</label>
+            <label for="bio">Biography</label>
             <textarea 
               id="bio"
               v-model="profileData.Bio"
-              placeholder="Viết vài dòng về bản thân bạn..."
+              placeholder="Write a few lines about yourself..."
               rows="3"
               :disabled="isSaving || isSyncing"
             ></textarea>
           </div>
           
           <div class="form-group">
-            <label for="gender">Giới tính</label>
+            <label for="gender">Gender</label>
             <select 
               id="gender" 
               v-model="profileData.Gender"
               :disabled="isSaving || isSyncing"
             >
-              <option value="">Chọn giới tính</option>
-              <option value="male">Nam</option>
-              <option value="female">Nữ</option>
-              <option value="other">Khác</option>
+              <option value="">Choose gender</option>
+              <option value="male">Male</option>
+              <option value="female">Female</option>
+              <option value="other">Other</option>
             </select>
           </div>
           
@@ -132,7 +132,7 @@ Trang profile người dùng với data sync status và progress indicator - Ful
             >
               <span v-if="isSaving">Đang lưu...</span>
               <span v-else-if="isSyncing">Đang đồng bộ...</span>
-              <span v-else>Lưu thay đổi</span>
+              <span v-else>Save</span>
             </button>
             
           </div>

@@ -6,14 +6,14 @@ Hiển thị danh sách cuộc hội thoại và tìm kiếm người dùng đ�
   <div class="mess-right-panel">
     <!-- Header tìm kiếm -->
     <div class="search-header">
-      <h3 class="panel-title">Tin nhắn</h3>
+      <h3 class="panel-title">Message</h3>
       
       <div class="search-container">
         <div class="search-input-wrapper">
           <img src="@/assets/icons/search.png" alt="Search" class="search-icon">
           <input 
             type="text" 
-            placeholder="Tìm kiếm người dùng..."
+            placeholder="Search for users..."
             class="search-input"
             v-model="searchQuery"
             @input="handleSearchInput"
@@ -75,7 +75,7 @@ Hiển thị danh sách cuộc hội thoại và tìm kiếm người dùng đ�
     
     <!-- Danh sách cuộc hội thoại -->
     <div v-else class="conversations-section">
-      <h4 class="section-title">Cuộc hội thoại</h4>
+      <h4 class="section-title">Conversation</h4>
       
       <div v-if="isLoading && conversations.length === 0" class="loading-conversations">
         <div class="spinner-small"></div>

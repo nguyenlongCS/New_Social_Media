@@ -8,7 +8,7 @@ Tích hợp Mapbox GL JS để hiển thị interactive map với markers
     <!-- Header với controls -->
     <div class="nearby-header">
       <div class="header-left">
-        <h3 class="nearby-title">Tìm bạn xung quanh</h3>
+        <h3 class="nearby-title">Find Around</h3>
         <p class="nearby-subtitle">Khám phá những người dùng gần bạn</p>
       </div>
       
@@ -58,7 +58,7 @@ Tích hợp Mapbox GL JS để hiển thị interactive map với markers
           class="get-location-btn"
         >
           <span v-if="isGettingLocation">Đang lấy vị trí...</span>
-          <span v-else>Cho phép truy cập vị trí</span>
+          <span v-else>Allow location sharing</span>
         </button>
       </div>
     </div>

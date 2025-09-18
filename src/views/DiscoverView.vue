@@ -54,7 +54,7 @@ Grid bất đối xứng hiển thị trending posts và discover posts, sắp x
         
         <!-- All Posts Section -->
         <div v-if="discoverPosts.length > 0" class="all-posts-section">
-          <h2 class="section-title">Tất cả bài viết</h2>
+          <h2 class="section-title">All Post</h2>
           <div class="discover-grid">
             <DiscoverItem 
               v-for="post in discoverPosts"

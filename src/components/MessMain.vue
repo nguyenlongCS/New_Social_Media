@@ -20,7 +20,7 @@ Hiển thị danh sách tin nhắn và form gửi tin nhắn mới, hỗ trợ g
         </div>
         <div class="partner-details">
           <h3 class="partner-name">{{ selectedConversation.partnerName }}</h3>
-          <span class="online-status">Đang hoạt động</span>
+          <span class="online-status">Active</span>
         </div>
       </div>
     </div>
@@ -110,7 +110,7 @@ Hiển thị danh sách tin nhắn và form gửi tin nhắn mới, hỗ trợ g
         <input 
           v-model="messageText"
           type="text" 
-          placeholder="Nhập tin nhắn..."
+          placeholder="Enter message..."
           class="message-input"
           @keyup.enter="handleSendText"
           :disabled="isSending"

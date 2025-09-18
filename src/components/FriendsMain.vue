@@ -9,8 +9,8 @@ Hiển thị 4 tab: Danh sách bạn, Gợi ý bạn bè, Lời mời kết bạ
       <!-- Danh sách bạn bè -->
       <div v-if="activeTab === 'friends'" class="friends-tab">
         <div class="tab-header">
-          <h2>Danh sách bạn bè</h2>
-          <p>{{ friendsList.length }} bạn bè</p>
+          <h2>Friends List</h2>
+          <p>{{ friendsList.length }} Bạn bè</p>
         </div>
         
         <div v-if="isLoadingFriends && friendsList.length === 0" class="loading-state">
@@ -43,7 +43,7 @@ Hiển thị 4 tab: Danh sách bạn, Gợi ý bạn bè, Lời mời kết bạ
                 class="unfriend-btn"
                 :disabled="isProcessing"
               >
-                Hủy kết bạn
+                Unfriend
               </button>
             </div>
           </div>
@@ -53,7 +53,7 @@ Hiển thị 4 tab: Danh sách bạn, Gợi ý bạn bè, Lời mời kết bạ
       <!-- Gợi ý bạn bè -->
       <div v-else-if="activeTab === 'suggestions'" class="suggestions-tab">
         <div class="tab-header">
-          <h2>Gợi ý bạn bè</h2>
+          <h2>Friends Suggestion</h2>
           <p>Những người bạn có thể quen biết</p>
         </div>
         
@@ -87,7 +87,7 @@ Hiển thị 4 tab: Danh sách bạn, Gợi ý bạn bè, Lời mời kết bạ
                 class="add-friend-btn"
                 :disabled="isProcessing"
               >
-                Gửi lời mời
+                Send Invitation
               </button>
             </div>
           </div>
@@ -97,7 +97,7 @@ Hiển thị 4 tab: Danh sách bạn, Gợi ý bạn bè, Lời mời kết bạ
       <!-- Lời mời kết bạn -->
       <div v-else-if="activeTab === 'requests'" class="requests-tab">
         <div class="tab-header">
-          <h2>Lời mời kết bạn</h2>
+          <h2>Friends Invitation</h2>
           <p>{{ friendRequests.length }} lời mời đang chờ</p>
         </div>
         
@@ -131,14 +131,14 @@ Hiển thị 4 tab: Danh sách bạn, Gợi ý bạn bè, Lời mời kết bạ
                 class="accept-btn"
                 :disabled="isProcessing"
               >
-                Chấp nhận
+                Accept
               </button>
               <button 
                 @click="$emit('reject-request', request)"
                 class="reject-btn"
                 :disabled="isProcessing"
               >
-                Từ chối
+                Decline
               </button>
             </div>
           </div>

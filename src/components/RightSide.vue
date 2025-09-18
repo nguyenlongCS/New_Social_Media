@@ -63,7 +63,7 @@ Fixed: Sử dụng addCommentToPost từ usePosts thay vì addComment trực ti�
         <input 
           ref="commentInputRef"
           type="text" 
-          placeholder="Viết bình luận..."
+          placeholder="Write a review..."
           class="comment-input"
           v-model="commentText"
           @keyup.enter="handleAddComment"
@@ -75,7 +75,7 @@ Fixed: Sử dụng addCommentToPost từ usePosts thay vì addComment trực ti�
           :disabled="!commentText.trim() || isAddingComment"
         >
           <span v-if="isAddingComment">Đang gửi...</span>
-          <span v-else>Gửi</span>
+          <span v-else>Send</span>
         </button>
       </div>
     </div>

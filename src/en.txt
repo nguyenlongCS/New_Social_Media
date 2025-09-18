@@ -1,0 +1,52 @@
+/home
+Logout
+Search...
+Likes
+Comments
+Send
+Write a review...
+Like || Liked
+Create Post
+Discover
+Admin
+Setting
+Friends List
+
+/profile
+Display name
+Biography
+Write a few lines about yourself...
+Gender (Choose gender, Male, Female, Other)
+Save
+
+/friends
+Friends List
+Friends Suggestion
+Friends Invitation
+Find Around
+Unfriend
+Send Invitation
+Allow location sharing
+Accept || Decline
+
+/news
+Read the article
+
+/messages
+Message
+Search for users...
+Conversation
+Active
+Enter message...
+
+/create-post
+Post title
+Enter a title for your post...
+Post content
+Share your thoughts...
+Cancel || Post
+
+/discover
+Top Trending
+All Post
+

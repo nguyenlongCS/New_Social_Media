@@ -10,7 +10,7 @@ Hiển thị các section buttons: Danh sách bạn, Gợi ý bạn bè, Lời m
         @click="$emit('switch-tab', 'friends')"
       >
         <img src="@/assets/icons/friends.png" alt="Friends" class="section-icon">
-        <span>Danh sách bạn</span>
+        <span>Friends List</span>
       </button>
       
       <button 
@@ -18,7 +18,7 @@ Hiển thị các section buttons: Danh sách bạn, Gợi ý bạn bè, Lời m
         @click="$emit('switch-tab', 'suggestions')"
       >
         <img src="@/assets/icons/suggest.png" alt="Suggestions" class="section-icon">
-        <span>Gợi ý bạn bè</span>
+        <span>Friends Suggestion</span>
       </button>
       
       <button 
@@ -26,7 +26,7 @@ Hiển thị các section buttons: Danh sách bạn, Gợi ý bạn bè, Lời m
         @click="$emit('switch-tab', 'requests')"
       >
         <img src="@/assets/icons/notification.png" alt="Requests" class="section-icon">
-        <span>Lời mời kết bạn</span>
+        <span>Friends Invitation</span>
         <span v-if="requestsCount > 0" class="notification-badge">{{ requestsCount }}</span>
       </button>
       
@@ -35,7 +35,7 @@ Hiển thị các section buttons: Danh sách bạn, Gợi ý bạn bè, Lời m
         @click="$emit('switch-tab', 'nearby')"
       >
         <img src="@/assets/icons/discover.png" alt="Nearby" class="section-icon">
-        <span>Tìm bạn xung quanh</span>
+        <span>Find Around</span>
       </button>
     </div>
   </aside>
