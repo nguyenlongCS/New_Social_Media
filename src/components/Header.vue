@@ -1,6 +1,7 @@
 <!--
 src/components/Header.vue - Updated Version
 Header với notification icon và badge số lượng thông báo chưa đọc
+Badge hiển thị dạng chấm tròn màu đỏ ở góc phải trên icon notifications
 Tích hợp NotificationPanel và tự động khởi tạo listener khi user đăng nhập
 -->
 <template>
@@ -24,20 +25,20 @@ Tích hợp NotificationPanel và tự động khởi tạo listener khi user đ
         <img src="@/assets/icons/mess.png" alt="Messages" width="20" height="20">
       </a>
       
-      <!-- Notification Icon với Badge -->
+      <!-- Notification Icon với Badge chấm tròn màu đỏ -->
       <div class="notification-container" ref="notificationContainerRef">
-        <button 
-          class="nav-icon notification-btn" 
-          title="Thông báo" 
-          @click="toggleNotificationPanel"
-          :class="{ active: showNotificationPanel }"
+        <a href="#" 
+           class="nav-icon notification-btn" 
+           title="Thông báo" 
+           @click.prevent="toggleNotificationPanel"
+           :class="{ active: showNotificationPanel }"
         >
           <img src="@/assets/icons/notification.png" alt="Notification" width="20" height="20">
-          <!-- Badge số lượng thông báo chưa đọc -->
+          <!-- Badge chấm tròn màu đỏ với số lượng thông báo chưa đọc -->
           <span v-if="unreadCount > 0" class="notification-badge">
             {{ unreadCount > 99 ? '99+' : unreadCount }}
           </span>
-        </button>
+        </a>
         
         <!-- Notification Panel -->
         <NotificationPanel 
@@ -478,6 +479,53 @@ nav {
 @keyframes spin {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
+}
+
+/* Notification container styles - giữ thuộc tính nav-icon */
+.notification-container {
+  position: relative;
+  display: inline-block;
+}
+
+.notification-btn {
+  position: relative;
+  /* Kế thừa tất cả styles từ .nav-icon */
+}
+
+.notification-btn.active {
+  background-color: rgba(255, 255, 255, 0.3);
+  transform: scale(1.1);
+}
+
+/* Notification badge - chấm tròn màu đỏ với số ở góc phải trên */
+.notification-badge {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  min-width: 18px;
+  height: 18px;
+  background: #ef4444;
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0 4px;
+  border: 2px solid rgba(255, 255, 255, 0.9);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  animation: badgePulse 2s ease-in-out infinite;
+}
+
+/* Animation cho badge khi có thông báo mới */
+@keyframes badgePulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
 }
 
 /* Avatar load animation */
